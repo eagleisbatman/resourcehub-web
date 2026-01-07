@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { generateJWT, generateRefreshToken } from "@/lib/auth";
+import { generateJWT, generateRefreshToken, type UserRole } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
