@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { resources, roles } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -7,21 +9,29 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    const resource = await db.resource.findUnique({
-      where: { id: params.id },
-      include: {
-        role: true,
-      },
-    });
+    const [result] = await db
+      .select({
+        resource: resources,
+        role: roles,
+      })
+      .from(resources)
+      .innerJoin(roles, eq(resources.roleId, roles.id))
+      .where(eq(resources.id, params.id))
+      .limit(1);
 
-    if (!resource) {
+    if (!result) {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "Resource not found" } },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ data: resource });
+    return NextResponse.json({
+      data: {
+        ...result.resource,
+        role: result.role,
+      },
+    });
   } catch (error) {
     console.error("Get resource error:", error);
     return NextResponse.json(
@@ -48,26 +58,31 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (availability !== undefined) updateData.availability = availability;
     if (isActive !== undefined) updateData.isActive = isActive;
 
-    const resource = await db.resource.update({
-      where: { id: params.id },
-      data: updateData,
-      include: {
-        role: true,
-      },
-    });
+    const [resource] = await db.update(resources)
+      .set(updateData)
+      .where(eq(resources.id, params.id))
+      .returning();
 
-    return NextResponse.json({ data: resource });
-  } catch (error: any) {
-    if (error.code === "P2002") {
-      return NextResponse.json(
-        { error: { code: "DUPLICATE", message: "Resource code already exists" } },
-        { status: 409 }
-      );
-    }
-    if (error.code === "P2025") {
+    if (!resource) {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "Resource not found" } },
         { status: 404 }
+      );
+    }
+
+    const [role] = await db.select().from(roles).where(eq(roles.id, resource.roleId)).limit(1);
+
+    return NextResponse.json({
+      data: {
+        ...resource,
+        role,
+      },
+    });
+  } catch (error: any) {
+    if (error.code === "23505") {
+      return NextResponse.json(
+        { error: { code: "DUPLICATE", message: "Resource code already exists" } },
+        { status: 409 }
       );
     }
     console.error("Update resource error:", error);
@@ -83,18 +98,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    await db.resource.delete({
-      where: { id: params.id },
-    });
+    await db.delete(resources).where(eq(resources.id, params.id));
 
     return NextResponse.json({ data: { success: true } });
   } catch (error: any) {
-    if (error.code === "P2025") {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "Resource not found" } },
-        { status: 404 }
-      );
-    }
     console.error("Delete resource error:", error);
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to delete resource" } },
@@ -102,4 +109,3 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     );
   }
 }
-

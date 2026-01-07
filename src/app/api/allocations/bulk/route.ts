@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { allocations, projects, statuses, roles } from "@/lib/db/schema";
+import { eq, and } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function POST(req: NextRequest) {
@@ -8,9 +10,9 @@ export async function POST(req: NextRequest) {
     if (authError) return authError;
 
     const body = await req.json();
-    const { allocations } = body;
+    const { allocations: allocationsData } = body;
 
-    if (!Array.isArray(allocations)) {
+    if (!Array.isArray(allocationsData)) {
       return NextResponse.json(
         { error: { code: "VALIDATION_ERROR", message: "Allocations must be an array" } },
         { status: 400 }
@@ -18,49 +20,87 @@ export async function POST(req: NextRequest) {
     }
 
     const results = await Promise.allSettled(
-      allocations.map(async (alloc: any) => {
+      allocationsData.map(async (alloc: any) => {
         const { projectId, roleId, resourceIds, year, month, week, plannedHours, actualHours, notes } = alloc;
 
         if (!projectId || !roleId || !year || !month || !week) {
           throw new Error("Missing required fields");
         }
 
-        return db.allocation.upsert({
-          where: {
-            projectId_roleId_year_month_week: {
-              projectId,
-              roleId,
-              year,
-              month,
-              week,
+        const [existing] = await db
+          .select()
+          .from(allocations)
+          .where(
+            and(
+              eq(allocations.projectId, projectId),
+              eq(allocations.roleId, roleId),
+              eq(allocations.year, year),
+              eq(allocations.month, month),
+              eq(allocations.week, week)
+            )
+          )
+          .limit(1);
+
+        if (existing) {
+          const [updated] = await db
+            .update(allocations)
+            .set({
+              resourceIds: resourceIds || [],
+              plannedHours: plannedHours ? String(plannedHours) : "0",
+              actualHours: actualHours ? String(actualHours) : "0",
+              notes,
+            })
+            .where(eq(allocations.id, existing.id))
+            .returning();
+
+          const [projectResult] = await db
+            .select({ project: projects, status: statuses })
+            .from(projects)
+            .innerJoin(statuses, eq(projects.statusId, statuses.id))
+            .where(eq(projects.id, updated.projectId))
+            .limit(1);
+
+          const [role] = await db.select().from(roles).where(eq(roles.id, updated.roleId)).limit(1);
+
+          return {
+            ...updated,
+            project: {
+              ...projectResult?.project,
+              status: projectResult?.status,
             },
-          },
-          update: {
-            resourceIds: resourceIds || [],
-            plannedHours: plannedHours ? parseFloat(plannedHours) : 0,
-            actualHours: actualHours ? parseFloat(actualHours) : 0,
-            notes,
-          },
-          create: {
+            role,
+          };
+        } else {
+          const [created] = await db.insert(allocations).values({
             projectId,
             roleId,
             resourceIds: resourceIds || [],
             year,
             month,
             week,
-            plannedHours: plannedHours ? parseFloat(plannedHours) : 0,
-            actualHours: actualHours ? parseFloat(actualHours) : 0,
+            plannedHours: plannedHours ? String(plannedHours) : "0",
+            actualHours: actualHours ? String(actualHours) : "0",
             notes,
-          },
-          include: {
+          }).returning();
+
+          const [projectResult] = await db
+            .select({ project: projects, status: statuses })
+            .from(projects)
+            .innerJoin(statuses, eq(projects.statusId, statuses.id))
+            .where(eq(projects.id, created.projectId))
+            .limit(1);
+
+          const [role] = await db.select().from(roles).where(eq(roles.id, created.roleId)).limit(1);
+
+          return {
+            ...created,
             project: {
-              include: {
-                status: true,
-              },
+              ...projectResult?.project,
+              status: projectResult?.status,
             },
-            role: true,
-          },
-        });
+            role,
+          };
+        }
       })
     );
 
@@ -71,7 +111,7 @@ export async function POST(req: NextRequest) {
       data: {
         successful,
         failed: failed.length,
-        total: allocations.length,
+        total: allocationsData.length,
       },
     });
   } catch (error) {
@@ -82,4 +122,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { flags } from "@/lib/db/schema";
+import { asc } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest) {
@@ -7,13 +9,9 @@ export async function GET(req: NextRequest) {
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    const flags = await db.flag.findMany({
-      orderBy: {
-        order: "asc",
-      },
-    });
+    const flagsList = await db.select().from(flags).orderBy(asc(flags.order));
 
-    return NextResponse.json({ data: flags });
+    return NextResponse.json({ data: flagsList });
   } catch (error) {
     console.error("Get flags error:", error);
     return NextResponse.json(
@@ -38,17 +36,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const flag = await db.flag.create({
-      data: {
-        name,
-        color: color || "#6B7280",
-        order: order || 0,
-      },
-    });
+    const [flag] = await db.insert(flags).values({
+      name,
+      color: color || "#6B7280",
+      order: order || 0,
+    }).returning();
 
     return NextResponse.json({ data: flag });
   } catch (error: any) {
-    if (error.code === "P2002") {
+    if (error.code === "23505") {
       return NextResponse.json(
         { error: { code: "DUPLICATE", message: "Flag name already exists" } },
         { status: 409 }
@@ -61,4 +57,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

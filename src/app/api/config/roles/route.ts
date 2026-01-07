@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { roles } from "@/lib/db/schema";
+import { asc } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest) {
@@ -7,13 +9,9 @@ export async function GET(req: NextRequest) {
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    const roles = await db.role.findMany({
-      orderBy: {
-        order: "asc",
-      },
-    });
+    const rolesList = await db.select().from(roles).orderBy(asc(roles.order));
 
-    return NextResponse.json({ data: roles });
+    return NextResponse.json({ data: rolesList });
   } catch (error) {
     console.error("Get roles error:", error);
     return NextResponse.json(
@@ -38,17 +36,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const role = await db.role.create({
-      data: {
-        name,
-        description,
-        order: order || 0,
-      },
-    });
+    const [role] = await db.insert(roles).values({
+      name,
+      description,
+      order: order || 0,
+    }).returning();
 
     return NextResponse.json({ data: role });
   } catch (error: any) {
-    if (error.code === "P2002") {
+    if (error.code === "23505") {
       return NextResponse.json(
         { error: { code: "DUPLICATE", message: "Role name already exists" } },
         { status: 409 }
@@ -61,4 +57,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

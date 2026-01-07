@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { projects, statuses, projectFlags, flags, allocations, roles } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -7,56 +9,61 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    const project = await db.project.findUnique({
-      where: { id: params.id },
-      include: {
-        status: true,
-        flags: {
-          include: {
-            flag: true,
-          },
-        },
-      },
-    });
+    const [projectResult] = await db
+      .select({
+        project: projects,
+        status: statuses,
+      })
+      .from(projects)
+      .innerJoin(statuses, eq(projects.statusId, statuses.id))
+      .where(eq(projects.id, params.id))
+      .limit(1);
 
-    if (!project) {
+    if (!projectResult) {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "Project not found" } },
         { status: 404 }
       );
     }
 
-    const allocations = await db.allocation.findMany({
-      where: {
-        projectId: params.id,
-      },
-      include: {
-        role: true,
-      },
-    });
+    const projectFlagsList = await db
+      .select({ flag: flags })
+      .from(projectFlags)
+      .innerJoin(flags, eq(projectFlags.flagId, flags.id))
+      .where(eq(projectFlags.projectId, params.id));
 
-    const totalPlanned = allocations.reduce((sum, alloc) => sum + Number(alloc.plannedHours), 0);
-    const totalActual = allocations.reduce((sum, alloc) => sum + Number(alloc.actualHours), 0);
+    const allocationsList = await db
+      .select({
+        allocation: allocations,
+        role: roles,
+      })
+      .from(allocations)
+      .innerJoin(roles, eq(allocations.roleId, roles.id))
+      .where(eq(allocations.projectId, params.id));
 
-    const roleBreakdown = allocations.reduce((acc, alloc) => {
-      const roleId = alloc.roleId;
+    const totalPlanned = allocationsList.reduce((sum, item) => sum + Number(item.allocation.plannedHours), 0);
+    const totalActual = allocationsList.reduce((sum, item) => sum + Number(item.allocation.actualHours), 0);
+
+    const roleBreakdown = allocationsList.reduce((acc, item) => {
+      const roleId = item.allocation.roleId;
       if (!acc[roleId]) {
         acc[roleId] = {
-          role: alloc.role,
+          role: item.role,
           planned: 0,
           actual: 0,
         };
       }
-      acc[roleId].planned += Number(alloc.plannedHours);
-      acc[roleId].actual += Number(alloc.actualHours);
+      acc[roleId].planned += Number(item.allocation.plannedHours);
+      acc[roleId].actual += Number(item.allocation.actualHours);
       return acc;
     }, {} as Record<string, any>);
 
     return NextResponse.json({
       data: {
         project: {
-          ...project,
-          flags: project.flags.map((pf) => pf.flag),
+          ...projectResult.project,
+          status: projectResult.status,
+          flags: projectFlagsList.map((pf) => pf.flag),
         },
         totalPlanned: Math.round(totalPlanned * 10) / 10,
         totalActual: Math.round(totalActual * 10) / 10,
@@ -75,4 +82,3 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     );
   }
 }
-

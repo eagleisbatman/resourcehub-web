@@ -21,10 +21,11 @@ export async function runStartupMigrations() {
     await seed();
     migrationsRun = true;
     console.log("✅ Startup migrations completed");
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Log but don't fail - app can still start
-    console.error("⚠️  Startup migration error:", error.message);
-    if (error?.message?.includes("already exists") || error?.message?.includes("duplicate")) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("⚠️  Startup migration error:", errorMessage);
+    if (errorMessage.includes("already exists") || errorMessage.includes("duplicate")) {
       console.log("ℹ️  Migrations already applied, continuing...");
       migrationsRun = true;
     }

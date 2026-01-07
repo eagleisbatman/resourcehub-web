@@ -68,8 +68,9 @@ export function StatusForm({ open, onOpenChange, status, onSuccess }: StatusForm
 
       onSuccess();
       onOpenChange(false);
-    } catch (error: any) {
-      alert(error.message || "Failed to save status");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to save status";
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,4 @@
 import { db } from "./index";
-import { statuses, flags, roles } from "./schema";
 import { sql } from "drizzle-orm";
 
 export async function seed() {

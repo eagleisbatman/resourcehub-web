@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { projects, statuses, projectFlags, flags } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -7,34 +9,34 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    const project = await db.project.findUnique({
-      where: { id: params.id },
-      include: {
-        status: true,
-        flags: {
-          include: {
-            flag: true,
-          },
-        },
-        allocations: {
-          include: {
-            role: true,
-          },
-        },
-      },
-    });
+    const [projectResult] = await db
+      .select({
+        project: projects,
+        status: statuses,
+      })
+      .from(projects)
+      .innerJoin(statuses, eq(projects.statusId, statuses.id))
+      .where(eq(projects.id, params.id))
+      .limit(1);
 
-    if (!project) {
+    if (!projectResult) {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "Project not found" } },
         { status: 404 }
       );
     }
 
+    const projectFlagsList = await db
+      .select({ flag: flags })
+      .from(projectFlags)
+      .innerJoin(flags, eq(projectFlags.flagId, flags.id))
+      .where(eq(projectFlags.projectId, params.id));
+
     return NextResponse.json({
       data: {
-        ...project,
-        flags: project.flags.map((pf) => pf.flag),
+        ...projectResult.project,
+        status: projectResult.status,
+        flags: projectFlagsList.map((pf) => pf.flag),
       },
     });
   } catch (error) {
@@ -54,10 +56,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const body = await req.json();
     const { code, name, description, startDate, endDate, isOngoing, statusId, flagIds, isArchived } = body;
 
-    const existingProject = await db.project.findUnique({
-      where: { id: params.id },
-      include: { flags: true },
-    });
+    const [existingProject] = await db
+      .select()
+      .from(projects)
+      .where(eq(projects.id, params.id))
+      .limit(1);
 
     if (!existingProject) {
       return NextResponse.json(
@@ -76,35 +79,39 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (statusId !== undefined) updateData.statusId = statusId;
     if (isArchived !== undefined) updateData.isArchived = isArchived;
 
-    const project = await db.project.update({
-      where: { id: params.id },
-      data: {
-        ...updateData,
-        ...(flagIds !== undefined && {
-          flags: {
-            deleteMany: {},
-            create: flagIds.map((flagId: string) => ({ flagId })),
-          },
-        }),
-      },
-      include: {
-        status: true,
-        flags: {
-          include: {
-            flag: true,
-          },
-        },
-      },
-    });
+    const [project] = await db.update(projects)
+      .set(updateData)
+      .where(eq(projects.id, params.id))
+      .returning();
+
+    if (flagIds !== undefined) {
+      await db.delete(projectFlags).where(eq(projectFlags.projectId, params.id));
+      if (flagIds.length > 0) {
+        await db.insert(projectFlags).values(
+          flagIds.map((flagId: string) => ({
+            projectId: params.id,
+            flagId,
+          }))
+        );
+      }
+    }
+
+    const [status] = await db.select().from(statuses).where(eq(statuses.id, project.statusId)).limit(1);
+    const projectFlagsList = await db
+      .select({ flag: flags })
+      .from(projectFlags)
+      .innerJoin(flags, eq(projectFlags.flagId, flags.id))
+      .where(eq(projectFlags.projectId, params.id));
 
     return NextResponse.json({
       data: {
         ...project,
-        flags: project.flags.map((pf) => pf.flag),
+        status,
+        flags: projectFlagsList.map((pf) => pf.flag),
       },
     });
   } catch (error: any) {
-    if (error.code === "P2002") {
+    if (error.code === "23505") {
       return NextResponse.json(
         { error: { code: "DUPLICATE", message: "Project code already exists" } },
         { status: 409 }
@@ -123,18 +130,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    await db.project.delete({
-      where: { id: params.id },
-    });
+    await db.delete(projects).where(eq(projects.id, params.id));
 
     return NextResponse.json({ data: { success: true } });
   } catch (error: any) {
-    if (error.code === "P2025") {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "Project not found" } },
-        { status: 404 }
-      );
-    }
     console.error("Delete project error:", error);
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to delete project" } },
@@ -142,4 +141,3 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     );
   }
 }
-

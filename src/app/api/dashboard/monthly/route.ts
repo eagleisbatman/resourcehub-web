@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { allocations, projects, statuses, roles } from "@/lib/db/schema";
+import { eq, and } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest) {
@@ -11,47 +13,49 @@ export async function GET(req: NextRequest) {
     const year = parseInt(searchParams.get("year") || new Date().getFullYear().toString());
     const month = parseInt(searchParams.get("month") || (new Date().getMonth() + 1).toString());
 
-    const allocations = await db.allocation.findMany({
-      where: {
-        year,
-        month,
-      },
-      include: {
-        project: {
-          include: {
-            status: true,
-          },
-        },
-        role: true,
-      },
-    });
+    const allocationsList = await db
+      .select({
+        allocation: allocations,
+        project: projects,
+        status: statuses,
+        role: roles,
+      })
+      .from(allocations)
+      .innerJoin(projects, eq(allocations.projectId, projects.id))
+      .innerJoin(statuses, eq(projects.statusId, statuses.id))
+      .innerJoin(roles, eq(allocations.roleId, roles.id))
+      .where(and(eq(allocations.year, year), eq(allocations.month, month)));
 
     const weeklyBreakdown: Record<number, { planned: number; actual: number }> = {};
 
-    allocations.forEach((alloc) => {
-      if (!weeklyBreakdown[alloc.week]) {
-        weeklyBreakdown[alloc.week] = { planned: 0, actual: 0 };
+    allocationsList.forEach((item) => {
+      const week = item.allocation.week;
+      if (!weeklyBreakdown[week]) {
+        weeklyBreakdown[week] = { planned: 0, actual: 0 };
       }
-      weeklyBreakdown[alloc.week].planned += Number(alloc.plannedHours);
-      weeklyBreakdown[alloc.week].actual += Number(alloc.actualHours);
+      weeklyBreakdown[week].planned += Number(item.allocation.plannedHours);
+      weeklyBreakdown[week].actual += Number(item.allocation.actualHours);
     });
 
-    const projectBreakdown = allocations.reduce((acc, alloc) => {
-      const projectId = alloc.projectId;
+    const projectBreakdown = allocationsList.reduce((acc, item) => {
+      const projectId = item.allocation.projectId;
       if (!acc[projectId]) {
         acc[projectId] = {
-          project: alloc.project,
+          project: {
+            ...item.project,
+            status: item.status,
+          },
           planned: 0,
           actual: 0,
         };
       }
-      acc[projectId].planned += Number(alloc.plannedHours);
-      acc[projectId].actual += Number(alloc.actualHours);
+      acc[projectId].planned += Number(item.allocation.plannedHours);
+      acc[projectId].actual += Number(item.allocation.actualHours);
       return acc;
     }, {} as Record<string, any>);
 
-    const totalPlanned = allocations.reduce((sum, alloc) => sum + Number(alloc.plannedHours), 0);
-    const totalActual = allocations.reduce((sum, alloc) => sum + Number(alloc.actualHours), 0);
+    const totalPlanned = allocationsList.reduce((sum, item) => sum + Number(item.allocation.plannedHours), 0);
+    const totalActual = allocationsList.reduce((sum, item) => sum + Number(item.allocation.actualHours), 0);
 
     return NextResponse.json({
       data: {
@@ -79,4 +83,3 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-

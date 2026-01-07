@@ -1,4 +1,4 @@
-import { NextAuthOptions } from "next-auth";
+import { type NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { DrizzleAdapter } from "./db/adapter";
 import { db } from "./db";
@@ -12,7 +12,7 @@ const allowedDomains = process.env.ALLOWED_DOMAINS?.split(",") || [];
 const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "";
 
 export const authOptions: NextAuthOptions = {
-  adapter: DrizzleAdapter as any,
+  adapter: DrizzleAdapter,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
@@ -20,7 +20,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       if (!user.email) return false;
 
       const emailDomain = user.email.split("@")[1];
@@ -45,7 +45,7 @@ export const authOptions: NextAuthOptions = {
 
       return true;
     },
-    async session({ session, user }) {
+    async session({ session }) {
       if (session.user?.email) {
         const [dbUser] = await db.select().from(users).where(eq(users.email, session.user.email)).limit(1);
 
@@ -98,4 +98,5 @@ export function generateRefreshToken(userId: string): string {
     expiresIn: "30d",
   });
 }
+
 
