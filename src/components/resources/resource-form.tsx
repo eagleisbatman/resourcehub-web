@@ -90,7 +90,8 @@ export function ResourceForm({
       onSuccess();
       onOpenChange(false);
     } catch (error: unknown) {
-      alert(error.message || "Failed to save resource");
+      const err = error instanceof Error ? error : new Error(String(error));
+      alert(err.message || "Failed to save resource");
     } finally {
       setLoading(false);
     }
