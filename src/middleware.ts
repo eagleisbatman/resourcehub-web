@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
 export function middleware() {
   // Simple middleware - let NextAuth handle auth in routes
