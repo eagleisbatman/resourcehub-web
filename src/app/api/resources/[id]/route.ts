@@ -102,7 +102,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     await db.delete(resources).where(eq(resources.id, params.id));
 
     return NextResponse.json({ data: { success: true } });
-  } catch (_error: unknown) {
+  } catch {
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to delete resource" } },
       { status: 500 }
