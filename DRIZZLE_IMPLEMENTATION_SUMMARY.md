@@ -24,11 +24,11 @@
 
 ### 4. Deployment Integration
 - ✅ Created `scripts/migrate-on-deploy.ts` that runs migrations + seeds
-- ✅ Updated `vercel.json` to run migrations during build:
+- ✅ Updated Railway configuration to run migrations during build:
   ```json
   "buildCommand": "npm run db:deploy && npm run build"
   ```
-- ✅ Migrations run automatically on every Vercel deployment
+- ✅ Migrations run automatically on every Railway deployment
 
 ### 5. NextAuth Adapter
 - ✅ Created custom Drizzle adapter (`src/lib/db/adapter.ts`)
@@ -113,7 +113,7 @@ const [result] = await db
 
 ## 🚀 Deployment Flow
 
-1. **Vercel Build Starts**
+1. **Railway Build Starts**
 2. **Runs `npm run db:deploy`** which:
    - Executes `scripts/migrate-on-deploy.ts`
    - Runs migrations from `drizzle/migrations/`
@@ -139,5 +139,5 @@ const [result] = await db
 1. Convert remaining API routes using the patterns above
 2. Test locally: `npm run db:push && npm run db:seed`
 3. Verify idempotency by running migrations multiple times
-4. Deploy to Vercel - migrations will run automatically
+4. Deploy to Railway - migrations will run automatically
 

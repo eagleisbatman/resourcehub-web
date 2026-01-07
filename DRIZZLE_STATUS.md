@@ -24,7 +24,7 @@ The web application has been successfully migrated from **Prisma** to **Drizzle 
 - Seeds default statuses, flags, and roles safely
 
 ### 4. **Automatic Deployment** ✅
-- `vercel.json` configured: `"buildCommand": "npm run db:deploy && npm run build"`
+- Railway configured: `buildCommand: "npm run db:deploy && npm run build"`
 - `scripts/migrate-on-deploy.ts` runs migrations + seeds on every deploy
 - Error handling for "already exists" scenarios
 - Migrations run **before** build, ensuring database is ready
@@ -73,7 +73,7 @@ The web application has been successfully migrated from **Prisma** to **Drizzle 
 ### Deployment Flow
 
 ```
-Vercel Build → npm run db:deploy → Run Migrations → Seed Data → npm run build → Deploy
+Railway Build → npm run db:deploy → Run Migrations → Seed Data → npm run build → Deploy
 ```
 
 Each step is idempotent and safe to run multiple times.
@@ -85,7 +85,7 @@ Each step is idempotent and safe to run multiple times.
 - `src/lib/db/migrate.ts` - Migration runner
 - `src/lib/db/seed.ts` - Idempotent seed script
 - `scripts/migrate-on-deploy.ts` - Deployment script
-- `vercel.json` - Build configuration
+- `railway.json` / `railway.toml` - Railway build configuration
 
 ## 🚀 Testing
 
@@ -105,7 +105,7 @@ npm run db:seed
 ```
 
 ### Production
-- Migrations run automatically on Vercel deployment
+- Migrations run automatically on Railway deployment
 - Can deploy multiple times safely
 - No manual migration steps required
 
@@ -116,12 +116,12 @@ npm run db:seed
    - All routes follow the same pattern
 
 2. **Test Deployment**
-   - Deploy to Vercel staging
+   - Deploy to Railway staging
    - Verify migrations run successfully
    - Verify seed data is created
 
 3. **Monitor**
-   - Check Vercel build logs for migration output
+   - Check Railway build logs for migration output
    - Verify database tables are created correctly
 
 ## ✅ Summary
@@ -130,9 +130,9 @@ npm run db:seed
 
 - ✅ Migrations use `IF NOT EXISTS` - safe to run multiple times
 - ✅ Seed script uses `ON CONFLICT DO NOTHING` - no duplicate data
-- ✅ Automatic deployment via Vercel build command
+- ✅ Automatic deployment via Railway build command
 - ✅ Error handling for edge cases
 - ✅ Migration tracking prevents duplicate execution
 
-The system is ready for deployment and will handle migrations automatically on every Vercel build.
+The system is ready for deployment and will handle migrations automatically on every Railway build.
 

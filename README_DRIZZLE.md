@@ -7,7 +7,7 @@ This project uses **Drizzle ORM** with **idempotent migrations** that can be run
 ## Key Features
 
 ✅ **Idempotent Migrations**: All SQL uses `CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, etc.  
-✅ **Automatic Deployment**: Migrations run automatically during Vercel build  
+✅ **Automatic Deployment**: Migrations run automatically during Railway build  
 ✅ **No Duplicate Data**: Seed script uses `ON CONFLICT DO NOTHING`  
 ✅ **Migration Tracking**: Drizzle tracks executed migrations in `__drizzle_migrations` table
 
@@ -32,9 +32,9 @@ npm run db:generate
 
 ### Production Deployment
 
-Migrations run **automatically** during Vercel build:
+Migrations run **automatically** during Railway build:
 
-1. `vercel.json` includes: `"buildCommand": "npm run db:deploy && npm run build"`
+1. Railway configuration includes: `buildCommand: "npm run db:deploy && npm run build"`
 2. `db:deploy` script runs migrations + seeds data
 3. Both operations are idempotent - safe to run multiple times
 

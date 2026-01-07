@@ -7,7 +7,7 @@ The project has been migrated from Prisma to Drizzle ORM with idempotent migrati
 ## Key Features
 
 1. **Idempotent Migrations**: All migrations use `CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, etc.
-2. **Automatic Migration on Deploy**: Migrations run automatically during Vercel build
+2. **Automatic Migration on Deploy**: Migrations run automatically during Railway build
 3. **No Duplicate Data**: Seed script uses `onConflictDoNothing()` to prevent duplicates
 4. **Migration Tracking**: Drizzle tracks which migrations have been run
 
@@ -25,7 +25,7 @@ npm run db:seed  # Seed initial data
 ```
 
 ### Production (Automatic)
-Migrations run automatically during Vercel build via `vercel.json`:
+Migrations run automatically during Railway build via Railway configuration:
 ```json
 {
   "buildCommand": "npm run db:deploy && npm run build"
@@ -132,5 +132,5 @@ const count = await db
 1. Convert remaining API routes using the patterns above
 2. Test migrations locally: `npm run db:push`
 3. Verify idempotency by running migrations multiple times
-4. Deploy to Vercel - migrations will run automatically
+4. Deploy to Railway - migrations will run automatically
 
