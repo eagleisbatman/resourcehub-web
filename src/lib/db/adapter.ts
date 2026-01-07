@@ -111,7 +111,7 @@ export const DrizzleAdapter: Adapter = {
       providerAccountId: account.providerAccountId,
       refresh_token: account.refresh_token ?? null,
       access_token: account.access_token ?? null,
-      expires_at: account.expires_at ?? null,
+      expires_at: account.expires_at ? Number(account.expires_at) : null,
       token_type: account.token_type ?? null,
       scope: account.scope ?? null,
       id_token: account.id_token ?? null,
