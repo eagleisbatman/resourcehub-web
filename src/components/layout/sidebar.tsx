@@ -4,11 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard,
   FolderKanban,
   Users,
   Calendar,
-  Settings,
 } from "lucide-react";
 
 const navigation = [

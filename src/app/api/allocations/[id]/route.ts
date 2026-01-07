@@ -57,7 +57,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const body = await req.json();
     const { resourceIds, plannedHours, actualHours, notes } = body;
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (resourceIds !== undefined) updateData.resourceIds = resourceIds;
     if (plannedHours !== undefined) updateData.plannedHours = String(plannedHours);
     if (actualHours !== undefined) updateData.actualHours = String(actualHours);
@@ -94,7 +94,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         role,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { code?: string; message?: string };
     console.error("Update allocation error:", error);
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to update allocation" } },
@@ -111,7 +112,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     await db.delete(allocations).where(eq(allocations.id, params.id));
 
     return NextResponse.json({ data: { success: true } });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { code?: string; message?: string };
     console.error("Delete allocation error:", error);
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to delete allocation" } },

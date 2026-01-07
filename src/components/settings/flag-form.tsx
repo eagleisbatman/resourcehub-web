@@ -68,7 +68,7 @@ export function FlagForm({ open, onOpenChange, flag, onSuccess }: FlagFormProps)
 
       onSuccess();
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       alert(error.message || "Failed to save flag");
     } finally {
       setLoading(false);

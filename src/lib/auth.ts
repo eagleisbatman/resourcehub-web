@@ -99,4 +99,54 @@ export function generateRefreshToken(userId: string): string {
   });
 }
 
+// NextAuth v5 beta - session helper
+// Note: NextAuth v5 beta uses different API
+// We'll use the route handler approach for now
+export async function getServerSession() {
+  try {
+    // For NextAuth v5 beta, we need to use cookies directly
+    // This is a workaround until v5 is stable
+    const { cookies } = await import("next/headers");
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get("next-auth.session-token") || cookieStore.get("__Secure-next-auth.session-token");
+    
+    if (!sessionToken) {
+      return null;
+    }
+
+    // Get session from database using the token
+    const { db } = await import("./db");
+    const { sessions } = await import("./db/schema");
+    const { eq } = await import("drizzle-orm");
+    
+    const [session] = await db.select().from(sessions).where(eq(sessions.sessionToken, sessionToken.value)).limit(1);
+    
+    if (!session || session.expires < new Date()) {
+      return null;
+    }
+
+    // Get user from session
+    const { users } = await import("./db/schema");
+    const [user] = await db.select().from(users).where(eq(users.id, session.userId)).limit(1);
+    
+    if (!user || !user.isActive) {
+      return null;
+    }
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+        role: user.role as UserRole,
+        isActive: user.isActive,
+      },
+      expires: session.expires.toISOString(),
+    };
+  } catch {
+    return null;
+  }
+}
+
 

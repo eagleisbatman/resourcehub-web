@@ -98,7 +98,7 @@ export function ProjectForm({
 
       onSuccess();
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       alert(error.message || "Failed to save project");
     } finally {
       setLoading(false);

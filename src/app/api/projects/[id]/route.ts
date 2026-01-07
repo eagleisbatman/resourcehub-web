@@ -69,7 +69,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       );
     }
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (code !== undefined) updateData.code = code;
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
@@ -110,8 +110,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         flags: projectFlagsList.map((pf) => pf.flag),
       },
     });
-  } catch (error: any) {
-    if (error.code === "23505") {
+  } catch (error: unknown) {
+    const err = error as { code?: string; message?: string };
+    if (err.code === "23505") {
       return NextResponse.json(
         { error: { code: "DUPLICATE", message: "Project code already exists" } },
         { status: 409 }
@@ -133,7 +134,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     await db.delete(projects).where(eq(projects.id, params.id));
 
     return NextResponse.json({ data: { success: true } });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { code?: string; message?: string };
     console.error("Delete project error:", error);
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to delete project" } },

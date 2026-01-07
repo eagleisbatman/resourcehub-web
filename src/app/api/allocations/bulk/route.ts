@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     const results = await Promise.allSettled(
-      allocationsData.map(async (alloc: any) => {
+      allocationsData.map(async (alloc: { projectId?: string; roleId?: string; resourceIds?: string[]; year?: number; month?: number; week?: number; plannedHours?: number; actualHours?: number; notes?: string }) => {
         const { projectId, roleId, resourceIds, year, month, week, plannedHours, actualHours, notes } = alloc;
 
         if (!projectId || !roleId || !year || !month || !week) {
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
       })
     );
 
-    const successful = results.filter((r) => r.status === "fulfilled").map((r: any) => r.value);
+    const successful = results.filter((r): r is PromiseFulfilledResult<unknown> => r.status === "fulfilled").map((r) => r.value);
     const failed = results.filter((r) => r.status === "rejected");
 
     return NextResponse.json({

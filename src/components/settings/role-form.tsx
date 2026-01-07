@@ -66,7 +66,7 @@ export function RoleForm({ open, onOpenChange, role, onSuccess }: RoleFormProps)
 
       onSuccess();
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       alert(error.message || "Failed to save role");
     } finally {
       setLoading(false);

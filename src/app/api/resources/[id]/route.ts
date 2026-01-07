@@ -49,7 +49,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const body = await req.json();
     const { code, name, email, roleId, specialization, availability, isActive } = body;
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (code !== undefined) updateData.code = code;
     if (name !== undefined) updateData.name = name;
     if (email !== undefined) updateData.email = email;
@@ -78,8 +78,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         role,
       },
     });
-  } catch (error: any) {
-    if (error.code === "23505") {
+  } catch (error: unknown) {
+    const err = error as { code?: string; message?: string };
+    if (err.code === "23505") {
       return NextResponse.json(
         { error: { code: "DUPLICATE", message: "Resource code already exists" } },
         { status: 409 }
@@ -101,7 +102,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     await db.delete(resources).where(eq(resources.id, params.id));
 
     return NextResponse.json({ data: { success: true } });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { code?: string; message?: string };
     console.error("Delete resource error:", error);
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to delete resource" } },

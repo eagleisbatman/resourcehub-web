@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AllocationWithRelations, ProjectWithRelations, Role } from "@/types";
@@ -19,8 +19,7 @@ function getWeeksInMonth(year: number, month: number): number[] {
   const firstDay = new Date(year, month - 1, 1);
   const lastDay = new Date(year, month, 0);
   const weeks: number[] = [];
-  let currentWeek = 1;
-  let currentDate = new Date(firstDay);
+  const currentDate = new Date(firstDay);
 
   while (currentDate <= lastDay) {
     const weekNumber = Math.ceil((currentDate.getDate() + firstDay.getDay()) / 7);

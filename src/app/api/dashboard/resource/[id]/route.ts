@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { resources, roles, allocations, projects, statuses } from "@/lib/db/schema";
-import { eq, sql, arrayContains } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       acc[projectId].planned += Number(item.allocation.plannedHours);
       acc[projectId].actual += Number(item.allocation.actualHours);
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, { project: { id: string; name: string; status: { id: string; name: string } }; planned: number; actual: number }>);
 
     const maxHours = (resourceResult.resource.availability / 100) * 40 * 4;
 
@@ -70,7 +70,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         totalPlanned: Math.round(totalPlanned * 10) / 10,
         totalActual: Math.round(totalActual * 10) / 10,
         utilization: maxHours > 0 ? Math.round((totalActual / maxHours) * 10000) / 100 : 0,
-        projectBreakdown: Object.values(projectBreakdown).map((item: any) => ({
+        projectBreakdown: Object.values(projectBreakdown).map((item) => ({
           project: item.project,
           planned: Math.round(item.planned * 10) / 10,
           actual: Math.round(item.actual * 10) / 10,

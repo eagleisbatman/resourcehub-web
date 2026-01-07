@@ -75,8 +75,9 @@ export async function POST(req: NextRequest) {
         role,
       },
     });
-  } catch (error: any) {
-    if (error.code === "23505") {
+  } catch (error: unknown) {
+    const err = error as { code?: string; message?: string };
+    if (err.code === "23505") {
       return NextResponse.json(
         { error: { code: "DUPLICATE", message: "Resource code already exists" } },
         { status: 409 }

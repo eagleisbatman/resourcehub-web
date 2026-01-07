@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
       acc[projectId].planned += Number(item.allocation.plannedHours);
       acc[projectId].actual += Number(item.allocation.actualHours);
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, { project: { id: string; name: string; status: { id: string; name: string } }; planned: number; actual: number }>);
 
     const totalPlanned = allocationsList.reduce((sum, item) => sum + Number(item.allocation.plannedHours), 0);
     const totalActual = allocationsList.reduce((sum, item) => sum + Number(item.allocation.actualHours), 0);
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
           planned: Math.round(data.planned * 10) / 10,
           actual: Math.round(data.actual * 10) / 10,
         })),
-        projectBreakdown: Object.values(projectBreakdown).map((item: any) => ({
+        projectBreakdown: Object.values(projectBreakdown).map((item) => ({
           project: item.project,
           planned: Math.round(item.planned * 10) / 10,
           actual: Math.round(item.actual * 10) / 10,

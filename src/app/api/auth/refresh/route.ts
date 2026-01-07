@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const accessToken = generateJWT(user.id, user.email, user.role as any);
+    const accessToken = generateJWT(user.id, user.email, user.role as UserRole);
     const newRefreshToken = generateRefreshToken(user.id);
 
     return NextResponse.json({

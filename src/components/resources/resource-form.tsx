@@ -89,7 +89,7 @@ export function ResourceForm({
 
       onSuccess();
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       alert(error.message || "Failed to save resource");
     } finally {
       setLoading(false);

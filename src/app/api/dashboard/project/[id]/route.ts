@@ -56,7 +56,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       acc[roleId].planned += Number(item.allocation.plannedHours);
       acc[roleId].actual += Number(item.allocation.actualHours);
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, { role: { id: string; name: string }; planned: number; actual: number }>);
 
     return NextResponse.json({
       data: {
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         },
         totalPlanned: Math.round(totalPlanned * 10) / 10,
         totalActual: Math.round(totalActual * 10) / 10,
-        roleBreakdown: Object.values(roleBreakdown).map((item: any) => ({
+        roleBreakdown: Object.values(roleBreakdown).map((item) => ({
           role: item.role,
           planned: Math.round(item.planned * 10) / 10,
           actual: Math.round(item.actual * 10) / 10,

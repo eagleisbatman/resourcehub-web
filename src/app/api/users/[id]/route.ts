@@ -3,7 +3,6 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { requireSuperAdmin } from "@/lib/api-utils";
-import type { UserRole } from "@/types";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -13,7 +12,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const body = await req.json();
     const { role, isActive } = body;
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (role !== undefined) {
       if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
         return NextResponse.json(
@@ -38,7 +37,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     return NextResponse.json({ data: user });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { code?: string; message?: string };
     console.error("Update user error:", error);
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to update user" } },
@@ -65,7 +65,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     return NextResponse.json({ data: { success: true } });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { code?: string; message?: string };
     console.error("Deactivate user error:", error);
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to deactivate user" } },

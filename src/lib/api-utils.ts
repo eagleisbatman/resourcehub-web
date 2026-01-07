@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import type { UserRole } from "./auth";
 
 export async function getCurrentUser() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   return session?.user || null;
 }
 
-export async function requireAuth(_req: NextRequest) {
+export async function requireAuth() {
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json(

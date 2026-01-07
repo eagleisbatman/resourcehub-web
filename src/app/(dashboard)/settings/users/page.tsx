@@ -25,7 +25,7 @@ import { useRouter } from "next/navigation";
 export default function UsersPage() {
   const { data: session } = useSession();
   const router = useRouter();
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<Array<{ id: string; email: string; name: string | null; role: string; isActive: boolean }>>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
