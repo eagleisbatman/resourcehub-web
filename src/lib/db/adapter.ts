@@ -69,12 +69,13 @@ export const DrizzleAdapter: Adapter = {
     } as AdapterUser : null;
   },
   async updateUser(user) {
+    const updateData: Record<string, unknown> = {};
+    if (user.name !== undefined) updateData.name = user.name;
+    if (user.image !== undefined) updateData.image = user.image;
+    if (user.email !== undefined) updateData.email = user.email;
+    
     const [updated] = await db.update(users)
-      .set({
-        name: user.name,
-        image: user.image,
-        email: user.email,
-      })
+      .set(updateData)
       .where(eq(users.id, user.id))
       .returning();
     return updated ? {
