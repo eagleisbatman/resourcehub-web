@@ -116,7 +116,7 @@ export const DrizzleAdapter: Adapter = {
       scope: account.scope ?? null,
       idToken: account.id_token ?? null,
       sessionState: account.session_state ?? null,
-    });
+    } as unknown as typeof accounts.$inferInsert);
   },
   async createSession({ sessionToken, userId, expires }) {
     const [session] = await db.insert(sessions).values({
