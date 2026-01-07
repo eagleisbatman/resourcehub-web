@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { statuses } from "@/lib/db/schema";
 import { asc } from "drizzle-orm";

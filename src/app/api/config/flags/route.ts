@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { flags } from "@/lib/db/schema";
 import { asc } from "drizzle-orm";
@@ -21,7 +21,7 @@ export async function GET() {
   }
 }
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
     const authError = await requireAuth();
     if (authError) return authError;
