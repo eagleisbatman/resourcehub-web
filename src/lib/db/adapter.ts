@@ -104,19 +104,21 @@ export const DrizzleAdapter: Adapter = {
     } as AdapterUser;
   },
   async linkAccount(account) {
-    await db.insert(accounts).values({
+    const accountData: Record<string, unknown> = {
       userId: account.userId,
       type: account.type,
       provider: account.provider,
       providerAccountId: account.providerAccountId,
-      refresh_token: account.refresh_token ?? null,
-      access_token: account.access_token ?? null,
-      expires_at: account.expires_at ? Number(account.expires_at) : null,
-      token_type: account.token_type ?? null,
-      scope: account.scope ?? null,
-      id_token: account.id_token ?? null,
-      session_state: account.session_state ?? null,
-    });
+    };
+    if (account.refresh_token) accountData.refresh_token = account.refresh_token;
+    if (account.access_token) accountData.access_token = account.access_token;
+    if (account.expires_at) accountData.expires_at = Number(account.expires_at);
+    if (account.token_type) accountData.token_type = account.token_type;
+    if (account.scope) accountData.scope = account.scope;
+    if (account.id_token) accountData.id_token = account.id_token;
+    if (account.session_state) accountData.session_state = account.session_state;
+    
+    await db.insert(accounts).values(accountData as typeof accounts.$inferInsert);
   },
   async createSession({ sessionToken, userId, expires }) {
     const [session] = await db.insert(sessions).values({
