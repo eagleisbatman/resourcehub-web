@@ -28,7 +28,9 @@ export const DrizzleAdapter: Adapter = {
       name: user.name,
       image: user.image,
       emailVerified: null,
-    } : null;
+      role: user.role,
+      isActive: user.isActive,
+    } as AdapterUser : null;
   },
   async getUserByEmail(email) {
     const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
@@ -38,7 +40,9 @@ export const DrizzleAdapter: Adapter = {
       name: user.name,
       image: user.image,
       emailVerified: null,
-    } : null;
+      role: user.role,
+      isActive: user.isActive,
+    } as AdapterUser : null;
   },
   async getUserByAccount({ providerAccountId, provider }) {
     const [account] = await db.select({
