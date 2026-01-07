@@ -5,7 +5,7 @@ import { requireSuperAdmin } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest) {
   try {
-    const authError = await requireSuperAdmin(req);
+    const authError = await requireSuperAdmin();
     if (authError) return authError;
 
     const usersList = await db.select({

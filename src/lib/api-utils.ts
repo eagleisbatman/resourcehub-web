@@ -18,8 +18,8 @@ export async function requireAuth() {
   return null;
 }
 
-export async function requireRole(req: NextRequest, role: UserRole) {
-  const authError = await requireAuth(req);
+export async function requireRole(role: UserRole) {
+  const authError = await requireAuth();
   if (authError) return authError;
 
   const user = await getCurrentUser();
@@ -32,6 +32,6 @@ export async function requireRole(req: NextRequest, role: UserRole) {
   return null;
 }
 
-export async function requireSuperAdmin(req: NextRequest) {
-  return requireRole(req, "SUPER_ADMIN");
+export async function requireSuperAdmin() {
+  return requireRole("SUPER_ADMIN");
 }

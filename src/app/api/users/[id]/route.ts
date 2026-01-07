@@ -6,7 +6,7 @@ import { requireSuperAdmin } from "@/lib/api-utils";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const authError = await requireSuperAdmin(req);
+    const authError = await requireSuperAdmin();
     if (authError) return authError;
 
     const body = await req.json();
@@ -48,7 +48,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const authError = await requireSuperAdmin(req);
+    const authError = await requireSuperAdmin();
     if (authError) return authError;
 
     const [user] = await db.update(users)
