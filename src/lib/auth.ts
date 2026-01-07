@@ -1,4 +1,4 @@
-import { type NextAuthOptions } from "next-auth";
+import type { NextAuthConfig } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { DrizzleAdapter } from "./db/adapter";
 import { db } from "./db";
@@ -11,7 +11,7 @@ export type UserRole = "SUPER_ADMIN" | "ADMIN";
 const allowedDomains = process.env.ALLOWED_DOMAINS?.split(",") || [];
 const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "";
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthConfig = {
   adapter: DrizzleAdapter,
   providers: [
     GoogleProvider({
