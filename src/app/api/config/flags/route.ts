@@ -4,7 +4,7 @@ import { flags } from "@/lib/db/schema";
 import { asc } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const authError = await requireAuth();
     if (authError) return authError;
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST() {
   try {
     const authError = await requireAuth();
     if (authError) return authError;
