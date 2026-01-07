@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { requireSuperAdmin } from "@/lib/api-utils";
