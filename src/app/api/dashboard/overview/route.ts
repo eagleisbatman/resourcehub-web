@@ -4,6 +4,7 @@ import { projects, resources, allocations } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(_req: NextRequest) {
   try {
     const authError = await requireAuth();
