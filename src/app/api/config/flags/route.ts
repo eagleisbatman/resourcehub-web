@@ -45,6 +45,7 @@ export async function POST() {
     return NextResponse.json({ data: flag });
   } catch (error: unknown) {
     const err = error as { code?: string };
+    const err = error as { code?: string };
     if (err.code === "23505") {
       return NextResponse.json(
         { error: { code: "DUPLICATE", message: "Flag name already exists" } },

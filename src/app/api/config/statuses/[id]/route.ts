@@ -31,6 +31,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     return NextResponse.json({ data: status });
   } catch (error: unknown) {
+    const err = error as { code?: string };
         if (err.code === "23505") {
       return NextResponse.json(
         { error: { code: "DUPLICATE", message: "Status name already exists" } },
@@ -54,6 +55,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     return NextResponse.json({ data: { success: true } });
   } catch (error: unknown) {
+    const err = error as { code?: string };
         console.error("Delete status error:", error);
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to delete status" } },

@@ -106,6 +106,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error: unknown) {
+    const err = error as { code?: string };
         if (err.code === "23505") {
       return NextResponse.json(
         { error: { code: "DUPLICATE", message: "Project code already exists" } },
