@@ -134,7 +134,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     await db.delete(projects).where(eq(projects.id, params.id));
 
     return NextResponse.json({ data: { success: true } });
-  } catch (error: unknown) {
+  } catch {
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to delete project" } },
       { status: 500 }
