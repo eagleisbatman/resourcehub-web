@@ -106,8 +106,8 @@ export async function POST(req: NextRequest) {
 
     const successful = results
       .filter((r): r is PromiseFulfilledResult<unknown> => r.status === "fulfilled")
-      .map((r) => r.value as unknown);
-    const failed = results.filter((r) => r.status === "rejected");
+      .map((r) => r.value);
+    const failed = results.filter((r): r is PromiseRejectedResult => r.status === "rejected");
 
     return NextResponse.json({
       data: {
