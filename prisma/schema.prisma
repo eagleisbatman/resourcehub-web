@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  role      UserRole @default(ADMIN)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  code        String        @unique
+  name        String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  isOngoing   Boolean       @default(false)
+  statusId    String
+  status      Status        @relation(fields: [statusId], references: [id])
+  flags       ProjectFlag[]
+  allocations Allocation[]
+  isArchived  Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Resource {
+  id             String   @id @default(cuid())
+  code           String   @unique
+  name           String
+  email          String?
+  roleId         String
+  role           Role     @relation(fields: [roleId], references: [id])
+  specialization String?
+  availability   Int      @default(100)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Status {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  color    String    @default("#6B7280")
+  order    Int       @default(0)
+  projects Project[]
+}
+
+model Flag {
+  id       String        @id @default(cuid())
+  name     String        @unique
+  color    String        @default("#6B7280")
+  order    Int           @default(0)
+  projects ProjectFlag[]
+}
+
+model ProjectFlag {
+  projectId String
+  flagId    String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  flag      Flag    @relation(fields: [flagId], references: [id], onDelete: Cascade)
+  @@id([projectId, flagId])
+}
+
+model Role {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  description String?
+  order       Int          @default(0)
+  resources   Resource[]
+  allocations Allocation[]
+}
+
+model Allocation {
+  id           String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  roleId      String
+  role        Role     @relation(fields: [roleId], references: [id])
+  resourceIds String[]
+  year        Int
+  month       Int
+  week        Int
+  plannedHours Decimal  @default(0) @db.Decimal(5, 1)
+  actualHours  Decimal  @default(0) @db.Decimal(5, 1)
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([projectId, roleId, year, month, week])
+  @@index([year, month])
+}
+
+model Setting {
+  key   String @id
+  value Json
+}
+
