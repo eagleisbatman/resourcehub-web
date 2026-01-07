@@ -78,7 +78,22 @@ export const DrizzleAdapter: Adapter = {
       .set(updateData as { name?: string | null; image?: string | null; email?: string })
       .where(eq(users.id, user.id))
       .returning();
-    return updated ? {
+    
+    if (!updated) {
+      const [fetched] = await db.select().from(users).where(eq(users.id, user.id)).limit(1);
+      if (!fetched) throw new Error("User not found");
+      return {
+        id: fetched.id,
+        email: fetched.email,
+        name: fetched.name,
+        image: fetched.image,
+        emailVerified: null,
+        role: fetched.role,
+        isActive: fetched.isActive,
+      } as AdapterUser;
+    }
+    
+    return {
       id: updated.id,
       email: updated.email,
       name: updated.name,
@@ -86,7 +101,7 @@ export const DrizzleAdapter: Adapter = {
       emailVerified: null,
       role: updated.role,
       isActive: updated.isActive,
-    } as AdapterUser : user;
+    } as AdapterUser;
   },
   async linkAccount(account) {
     await db.insert(accounts).values({
