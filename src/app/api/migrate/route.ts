@@ -6,9 +6,10 @@ export async function POST() {
     await runMigrations();
     return NextResponse.json({ success: true, message: "Migrations completed" });
   } catch (error: unknown) {
-        console.error("Migration failed:", error);
+    const err = error instanceof Error ? error : new Error(String(error));
+    console.error("Migration failed:", err);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: err.message },
       { status: 500 }
     );
   }
