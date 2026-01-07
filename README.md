@@ -1,6 +1,6 @@
-# Digital Green Resource Tracker - Web Admin
+# ResourceHub - Web Admin
 
-> Internal resource tracking and management system for Digital Green Foundation
+> Internal resource tracking and management system
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org)
@@ -9,7 +9,7 @@
 
 ## Overview
 
-The **Web Admin Panel** is the master data management interface for the Digital Green Resource Tracking System. It provides administrators with comprehensive tools to manage projects, resources, allocations, and system configuration.
+**ResourceHub** is a comprehensive resource tracking and management system. The **Web Admin Panel** provides administrators with powerful tools to manage projects, resources, allocations, and system configuration.
 
 ### Key Features
 
@@ -60,8 +60,8 @@ GOOGLE_CLIENT_ID=your-client-id
 GOOGLE_CLIENT_SECRET=your-client-secret
 
 # Domain Restriction
-ALLOWED_DOMAINS=digitalgreen.org
-SUPER_ADMIN_EMAIL=admin@digitalgreen.org
+ALLOWED_DOMAINS=yourdomain.com
+SUPER_ADMIN_EMAIL=admin@yourdomain.com
 
 # JWT for Mobile
 JWT_SECRET=your-jwt-secret-here
@@ -163,7 +163,7 @@ See [docs/api.md](../docs/api.md) for complete API documentation.
 
 ## License
 
-Internal use only - Digital Green Foundation
+Proprietary - Internal use only
 
 ## Support
 
