@@ -1,7 +1,7 @@
 import { db } from "./index";
 import { users, accounts, sessions, verificationTokens } from "./schema";
 import { eq, and } from "drizzle-orm";
-import type { Adapter } from "next-auth/adapters";
+import type { Adapter, AdapterUser } from "next-auth/adapters";
 
 export const DrizzleAdapter: Adapter = {
   async createUser(user) {
@@ -16,7 +16,9 @@ export const DrizzleAdapter: Adapter = {
       name: newUser.name,
       image: newUser.image,
       emailVerified: null,
-    };
+      role: newUser.role,
+      isActive: newUser.isActive,
+    } as AdapterUser;
   },
   async getUser(id) {
     const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
@@ -58,7 +60,9 @@ export const DrizzleAdapter: Adapter = {
       name: account.user.name,
       image: account.user.image,
       emailVerified: null,
-    } : null;
+      role: account.user.role,
+      isActive: account.user.isActive,
+    } as AdapterUser : null;
   },
   async updateUser(user) {
     const [updated] = await db.update(users)
@@ -75,7 +79,9 @@ export const DrizzleAdapter: Adapter = {
       name: updated.name,
       image: updated.image,
       emailVerified: null,
-    } : user;
+      role: updated.role,
+      isActive: updated.isActive,
+    } as AdapterUser : user;
   },
   async linkAccount(account) {
     await db.insert(accounts).values({
@@ -128,7 +134,9 @@ export const DrizzleAdapter: Adapter = {
         name: result.user.name,
         image: result.user.image,
         emailVerified: null,
-      },
+        role: result.user.role,
+        isActive: result.user.isActive,
+      } as AdapterUser,
     };
   },
   async updateSession({ sessionToken, expires, userId }) {
