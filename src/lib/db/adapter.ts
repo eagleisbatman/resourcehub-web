@@ -109,14 +109,14 @@ export const DrizzleAdapter: Adapter = {
       type: account.type,
       provider: account.provider,
       providerAccountId: account.providerAccountId,
-      refreshToken: account.refresh_token ?? null,
-      accessToken: account.access_token ?? null,
-      expiresAt: account.expires_at ?? null,
-      tokenType: account.token_type ?? null,
+      refresh_token: account.refresh_token ?? null,
+      access_token: account.access_token ?? null,
+      expires_at: account.expires_at ?? null,
+      token_type: account.token_type ?? null,
       scope: account.scope ?? null,
-      idToken: account.id_token ?? null,
-      sessionState: account.session_state ?? null,
-    } as unknown as typeof accounts.$inferInsert);
+      id_token: account.id_token ?? null,
+      session_state: account.session_state ?? null,
+    });
   },
   async createSession({ sessionToken, userId, expires }) {
     const [session] = await db.insert(sessions).values({
