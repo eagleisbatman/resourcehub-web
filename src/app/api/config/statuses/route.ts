@@ -44,8 +44,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ data: status });
   } catch (error: unknown) {
-    const err = error as { code?: string; message?: string };
-    if (err.code === "23505") {
+        if (err.code === "23505") {
       return NextResponse.json(
         { error: { code: "DUPLICATE", message: "Status name already exists" } },
         { status: 409 }

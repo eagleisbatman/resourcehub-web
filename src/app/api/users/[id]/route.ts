@@ -38,8 +38,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     return NextResponse.json({ data: user });
   } catch (error: unknown) {
-    const err = error as { code?: string; message?: string };
-    console.error("Update user error:", error);
+        console.error("Update user error:", error);
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to update user" } },
       { status: 500 }
@@ -66,8 +65,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     return NextResponse.json({ data: { success: true } });
   } catch (error: unknown) {
-    const err = error as { code?: string; message?: string };
-    console.error("Deactivate user error:", error);
+        console.error("Deactivate user error:", error);
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to deactivate user" } },
       { status: 500 }

@@ -7,8 +7,7 @@ export async function POST() {
     await runStartupMigrations();
     return NextResponse.json({ success: true, message: "Migrations completed" });
   } catch (error: unknown) {
-    const err = error as { code?: string; message?: string };
-    return NextResponse.json(
+        return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
     );

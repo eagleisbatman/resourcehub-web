@@ -106,8 +106,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error: unknown) {
-    const err = error as { code?: string; message?: string };
-    if (err.code === "23505") {
+        if (err.code === "23505") {
       return NextResponse.json(
         { error: { code: "DUPLICATE", message: "Allocation already exists for this project/role/week" } },
         { status: 409 }

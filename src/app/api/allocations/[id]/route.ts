@@ -95,8 +95,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       },
     });
   } catch (error: unknown) {
-    const err = error as { code?: string; message?: string };
-    console.error("Update allocation error:", error);
+        console.error("Update allocation error:", error);
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to update allocation" } },
       { status: 500 }
@@ -113,8 +112,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     return NextResponse.json({ data: { success: true } });
   } catch (error: unknown) {
-    const err = error as { code?: string; message?: string };
-    console.error("Delete allocation error:", error);
+        console.error("Delete allocation error:", error);
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to delete allocation" } },
       { status: 500 }
