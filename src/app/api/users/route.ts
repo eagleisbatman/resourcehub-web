@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { requireSuperAdmin } from "@/lib/api-utils";
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   try {
     const authError = await requireSuperAdmin();
     if (authError) return authError;
