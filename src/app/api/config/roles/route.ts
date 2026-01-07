@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest) {
@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    const roles = await prisma.role.findMany({
+    const roles = await db.role.findMany({
       orderBy: {
         order: "asc",
       },
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const role = await prisma.role.create({
+    const role = await db.role.create({
       data: {
         name,
         description,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -7,7 +7,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    const project = await prisma.project.findUnique({
+    const project = await db.project.findUnique({
       where: { id: params.id },
       include: {
         status: true,
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       );
     }
 
-    const allocations = await prisma.allocation.findMany({
+    const allocations = await db.allocation.findMany({
       where: {
         projectId: params.id,
       },

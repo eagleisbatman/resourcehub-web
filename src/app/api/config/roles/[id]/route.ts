@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
@@ -15,7 +15,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (description !== undefined) updateData.description = description;
     if (order !== undefined) updateData.order = order;
 
-    const role = await prisma.role.update({
+    const role = await db.role.update({
       where: { id: params.id },
       data: updateData,
     });
@@ -47,7 +47,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    await prisma.role.delete({
+    await db.role.delete({
       where: { id: params.id },
     });
 

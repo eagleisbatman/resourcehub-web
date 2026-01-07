@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest) {
@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    const flags = await prisma.flag.findMany({
+    const flags = await db.flag.findMany({
       orderBy: {
         order: "asc",
       },
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const flag = await prisma.flag.create({
+    const flag = await db.flag.create({
       data: {
         name,
         color: color || "#6B7280",

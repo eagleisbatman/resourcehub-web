@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { StatusForm } from "@/components/settings/status-form";
-import { Status } from "@prisma/client";
+import { Status } from "@/types";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 export default function StatusesPage() {

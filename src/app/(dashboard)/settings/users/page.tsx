@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@/types";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
@@ -29,7 +29,7 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (session?.user?.role !== UserRole.SUPER_ADMIN) {
+    if (session?.user?.role !== "SUPER_ADMIN") {
       router.push("/projects");
       return;
     }
@@ -123,8 +123,8 @@ export default function UsersPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
-                        <SelectItem value={UserRole.SUPER_ADMIN}>Super Admin</SelectItem>
+                        <SelectItem value="ADMIN">Admin</SelectItem>
+                        <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>

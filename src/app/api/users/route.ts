@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
+import { users } from "@/lib/db/schema";
 import { requireSuperAdmin } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest) {
@@ -7,23 +8,18 @@ export async function GET(req: NextRequest) {
     const authError = await requireSuperAdmin(req);
     if (authError) return authError;
 
-    const users = await prisma.user.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        image: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const usersList = await db.select({
+      id: users.id,
+      email: users.email,
+      name: users.name,
+      image: users.image,
+      role: users.role,
+      isActive: users.isActive,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
+    }).from(users).orderBy(users.createdAt);
 
-    return NextResponse.json({ data: users });
+    return NextResponse.json({ data: usersList });
   } catch (error) {
     console.error("Get users error:", error);
     return NextResponse.json(
@@ -32,4 +28,3 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-

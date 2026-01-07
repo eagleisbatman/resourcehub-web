@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
+import { users } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 import { requireSuperAdmin } from "@/lib/api-utils";
-import { UserRole } from "@prisma/client";
+import type { UserRole } from "@/types";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -13,7 +15,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     const updateData: any = {};
     if (role !== undefined) {
-      if (!Object.values(UserRole).includes(role)) {
+      if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
         return NextResponse.json(
           { error: { code: "VALIDATION_ERROR", message: "Invalid role" } },
           { status: 400 }
@@ -23,29 +25,20 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
     if (isActive !== undefined) updateData.isActive = isActive;
 
-    const user = await prisma.user.update({
-      where: { id: params.id },
-      data: updateData,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        image: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const [user] = await db.update(users)
+      .set(updateData)
+      .where(eq(users.id, params.id))
+      .returning();
 
-    return NextResponse.json({ data: user });
-  } catch (error: any) {
-    if (error.code === "P2025") {
+    if (!user) {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "User not found" } },
         { status: 404 }
       );
     }
+
+    return NextResponse.json({ data: user });
+  } catch (error: any) {
     console.error("Update user error:", error);
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to update user" } },
@@ -59,19 +52,20 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const authError = await requireSuperAdmin(req);
     if (authError) return authError;
 
-    await prisma.user.update({
-      where: { id: params.id },
-      data: { isActive: false },
-    });
+    const [user] = await db.update(users)
+      .set({ isActive: false })
+      .where(eq(users.id, params.id))
+      .returning();
 
-    return NextResponse.json({ data: { success: true } });
-  } catch (error: any) {
-    if (error.code === "P2025") {
+    if (!user) {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "User not found" } },
         { status: 404 }
       );
     }
+
+    return NextResponse.json({ data: { success: true } });
+  } catch (error: any) {
     console.error("Deactivate user error:", error);
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to deactivate user" } },
@@ -79,4 +73,3 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     );
   }
 }
-

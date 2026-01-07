@@ -1,16 +1,4 @@
-import { UserRole, Status, Flag, Role, Project, Resource, Allocation } from "@prisma/client";
+import type { UserRole as DrizzleUserRole, Status, Flag, Role, Project, Resource, Allocation } from "@/lib/db/schema";
 
-export type ProjectWithRelations = Project & {
-  status: Status;
-  flags: Flag[];
-};
-
-export type ResourceWithRole = Resource & {
-  role: Role;
-};
-
-export type AllocationWithRelations = Allocation & {
-  project: Project & { status: Status };
-  role: Role;
-};
-
+export type UserRole = "SUPER_ADMIN" | "ADMIN";
+export type { Status, Flag, Role, Project, Resource, Allocation };

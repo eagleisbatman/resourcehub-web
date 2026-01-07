@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -7,7 +7,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    const project = await prisma.project.findUnique({
+    const project = await db.project.findUnique({
       where: { id: params.id },
       include: {
         status: true,
@@ -54,7 +54,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const body = await req.json();
     const { code, name, description, startDate, endDate, isOngoing, statusId, flagIds, isArchived } = body;
 
-    const existingProject = await prisma.project.findUnique({
+    const existingProject = await db.project.findUnique({
       where: { id: params.id },
       include: { flags: true },
     });
@@ -76,7 +76,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (statusId !== undefined) updateData.statusId = statusId;
     if (isArchived !== undefined) updateData.isArchived = isArchived;
 
-    const project = await prisma.project.update({
+    const project = await db.project.update({
       where: { id: params.id },
       data: {
         ...updateData,
@@ -123,7 +123,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    await prisma.project.delete({
+    await db.project.delete({
       where: { id: params.id },
     });
 

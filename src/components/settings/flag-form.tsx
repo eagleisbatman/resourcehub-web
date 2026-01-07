@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Flag } from "@prisma/client";
+import { Flag } from "@/types";
 import { SketchPicker } from "react-color";
 
 interface FlagFormProps {

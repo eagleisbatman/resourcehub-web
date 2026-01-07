@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Role } from "@prisma/client";
+import { Role } from "@/types";
 
 interface RoleFormProps {
   open: boolean;

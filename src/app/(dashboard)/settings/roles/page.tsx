@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { RoleForm } from "@/components/settings/role-form";
-import { Role } from "@prisma/client";
+import { Role } from "@/types";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 export default function RolesPage() {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -7,7 +7,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    const resource = await prisma.resource.findUnique({
+    const resource = await db.resource.findUnique({
       where: { id: params.id },
       include: {
         role: true,
@@ -48,7 +48,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (availability !== undefined) updateData.availability = availability;
     if (isActive !== undefined) updateData.isActive = isActive;
 
-    const resource = await prisma.resource.update({
+    const resource = await db.resource.update({
       where: { id: params.id },
       data: updateData,
       include: {
@@ -83,7 +83,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    await prisma.resource.delete({
+    await db.resource.delete({
       where: { id: params.id },
     });
 

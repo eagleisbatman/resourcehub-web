@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest) {
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     const projectId = searchParams.get("projectId");
     const roleId = searchParams.get("roleId");
 
-    const allocations = await prisma.allocation.findMany({
+    const allocations = await db.allocation.findMany({
       where: {
         year,
         month,
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const allocation = await prisma.allocation.create({
+    const allocation = await db.allocation.create({
       data: {
         projectId,
         roleId,

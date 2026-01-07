@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Status } from "@prisma/client";
+import { Status } from "@/types";
 import { SketchPicker } from "react-color";
 
 interface StatusFormProps {

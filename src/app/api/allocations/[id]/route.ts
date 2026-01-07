@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -7,7 +7,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    const allocation = await prisma.allocation.findUnique({
+    const allocation = await db.allocation.findUnique({
       where: { id: params.id },
       include: {
         project: {
@@ -50,7 +50,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (actualHours !== undefined) updateData.actualHours = parseFloat(actualHours);
     if (notes !== undefined) updateData.notes = notes;
 
-    const allocation = await prisma.allocation.update({
+    const allocation = await db.allocation.update({
       where: { id: params.id },
       data: updateData,
       include: {
@@ -84,7 +84,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    await prisma.allocation.delete({
+    await db.allocation.delete({
       where: { id: params.id },
     });
 

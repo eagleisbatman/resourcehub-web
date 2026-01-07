@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { FlagForm } from "@/components/settings/flag-form";
-import { Flag } from "@prisma/client";
+import { Flag } from "@/types";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 export default function FlagsPage() {

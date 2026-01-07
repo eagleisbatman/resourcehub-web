@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function POST(req: NextRequest) {
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
           throw new Error("Missing required fields");
         }
 
-        return prisma.allocation.upsert({
+        return db.allocation.upsert({
           where: {
             projectId_roleId_year_month_week: {
               projectId,
