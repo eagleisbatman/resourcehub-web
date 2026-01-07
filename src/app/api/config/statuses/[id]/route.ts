@@ -31,6 +31,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     return NextResponse.json({ data: status });
   } catch (error: unknown) {
+    const err = error as { code?: string };
+    if (err.code === "23505") {
       return NextResponse.json(
         { error: { code: "DUPLICATE", message: "Status name already exists" } },
         { status: 409 }
