@@ -54,7 +54,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     await db.delete(flags).where(eq(flags.id, params.id));
 
     return NextResponse.json({ data: { success: true } });
-  } catch (error: unknown) {
+  } catch {
     return NextResponse.json(
       { error: { code: "SERVER_ERROR", message: "Failed to delete flag" } },
       { status: 500 }
