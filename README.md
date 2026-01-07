@@ -1,41 +1,170 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Digital Green Resource Tracker - Web Admin
+
+> Internal resource tracking and management system for Digital Green Foundation
+
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org)
+[![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-orange)](https://orm.drizzle.team)
+[![Railway](https://img.shields.io/badge/Deploy-Railway-blue)](https://railway.app)
+
+## Overview
+
+The **Web Admin Panel** is the master data management interface for the Digital Green Resource Tracking System. It provides administrators with comprehensive tools to manage projects, resources, allocations, and system configuration.
+
+### Key Features
+
+- 🔐 **Secure Authentication** - Google OAuth with domain restriction
+- 📊 **Project Management** - Create, update, and archive projects with status tracking
+- 👥 **Resource Management** - Manage team members, roles, and availability
+- 📅 **Allocation Planning** - Monthly allocation grid with planned/actual hours tracking
+- ⚙️ **System Configuration** - Manage statuses, flags, roles, and user permissions
+- 🎨 **Modern UI** - Built with Next.js 14, Tailwind CSS, and shadcn/ui components
+
+## Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript (strict mode)
+- **Database**: PostgreSQL with Drizzle ORM
+- **Authentication**: NextAuth.js (Google OAuth)
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Deployment**: Railway
+
+## Prerequisites
+
+- Node.js 20+ 
+- PostgreSQL database
+- Google OAuth credentials
 
 ## Getting Started
 
-First, run the development server:
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure Environment Variables
+
+Create a `.env.local` file:
+
+```env
+# Database
+DATABASE_URL=postgresql://user:password@host:port/database
+
+# NextAuth.js
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-here
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+
+# Domain Restriction
+ALLOWED_DOMAINS=digitalgreen.org
+SUPER_ADMIN_EMAIL=admin@digitalgreen.org
+
+# JWT for Mobile
+JWT_SECRET=your-jwt-secret-here
+```
+
+### 3. Run Database Migrations
+
+```bash
+npm run db:push      # Run idempotent migrations
+npm run db:seed      # Seed initial data (idempotent)
+```
+
+### 4. Start Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font) font.
+```
+web/
+├── src/
+│   ├── app/              # Next.js App Router
+│   │   ├── (auth)/      # Authentication routes
+│   │   ├── (dashboard)/ # Protected dashboard routes
+│   │   └── api/         # API endpoints
+│   ├── components/       # React components
+│   │   ├── ui/          # shadcn/ui components
+│   │   ├── forms/       # Form components
+│   │   └── layout/      # Layout components
+│   ├── lib/             # Utilities
+│   │   └── db/         # Drizzle ORM schema & migrations
+│   └── types/           # TypeScript types
+├── drizzle/             # Database migrations (idempotent)
+└── scripts/            # Deployment scripts
+```
 
-## Learn More
+## Available Scripts
 
-To learn more about Next.js, take a look at the following resources:
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run db:push` - Run database migrations
+- `npm run db:seed` - Seed initial data
+- `npm run db:generate` - Generate new migration
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Database Migrations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Migrations are **idempotent** and run automatically on Railway deployment:
 
-## Deploy on Railway
+- Uses `CREATE TABLE IF NOT EXISTS` - safe to run multiple times
+- Seed data uses `ON CONFLICT DO NOTHING` - prevents duplicates
+- Migrations tracked in `drizzle/__drizzle_migrations` table
 
-The easiest way to deploy your Next.js app is to use [Railway](https://railway.app). Railway automatically detects Next.js projects and runs migrations during build.
+## Deployment
+
+### Railway Deployment
 
 1. Connect your GitHub repository to Railway
-2. Railway will automatically detect the Next.js project
-3. Set environment variables in Railway dashboard
-4. Migrations run automatically during build via `railway.json` configuration
+2. Add PostgreSQL database service
+3. Configure environment variables in Railway dashboard
+4. Migrations run automatically during build
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) for detailed deployment instructions.
+
+## API Documentation
+
+All API endpoints follow RESTful conventions and return consistent JSON responses:
+
+```typescript
+// Success
+{ "data": T, "meta"?: { pagination } }
+
+// Error
+{ "error": { "code": string, "message": string } }
+```
+
+See [docs/api.md](../docs/api.md) for complete API documentation.
+
+## Authentication
+
+- **Web**: NextAuth.js session-based authentication with Google OAuth
+- **Mobile**: JWT tokens issued via `/api/auth/google` endpoint
+- **Domain Restriction**: Only allowed email domains can authenticate
+- **Role-Based Access**: Super Admin and Admin roles
+
+## Development Guidelines
+
+- All files must stay under 300 lines
+- Use TypeScript strict mode
+- Follow the patterns in `.cursorrules`
+- Write idempotent migrations
+- Test locally before deploying
+
+## License
+
+Internal use only - Digital Green Foundation
+
+## Support
+
+For issues or questions, contact the development team.
