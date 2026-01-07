@@ -4,7 +4,7 @@ import { flags } from "@/lib/db/schema";
 import { asc } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 
-export async function GET() {
+export async function GET(_req: NextRequest) {
   try {
     const authError = await requireAuth();
     if (authError) return authError;
@@ -44,7 +44,8 @@ export async function POST() {
 
     return NextResponse.json({ data: flag });
   } catch (error: unknown) {
-        if (err.code === "23505") {
+    const err = error as { code?: string };
+    if (err.code === "23505") {
       return NextResponse.json(
         { error: { code: "DUPLICATE", message: "Flag name already exists" } },
         { status: 409 }
