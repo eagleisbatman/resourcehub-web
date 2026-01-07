@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { runStartupMigrations } from "@/lib/db/startup";
+
+// Run migrations at startup (only in production/server)
+if (process.env.NODE_ENV === "production" && typeof window === "undefined") {
+  runStartupMigrations().catch(console.error);
+}
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
