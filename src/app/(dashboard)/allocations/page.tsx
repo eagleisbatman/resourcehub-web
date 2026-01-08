@@ -119,9 +119,31 @@ export default function AllocationsPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Allocations</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Allocations</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Assign resources to projects by entering hours for each project/role combination. 
+            Each row represents a project and role pair - enter planned and actual hours for each week.
+          </p>
+        </div>
         <MonthSelector year={year} month={month} onYearChange={setYear} onMonthChange={setMonth} />
       </div>
+
+      {projects.length === 0 && (
+        <div className="mb-4 rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-4">
+          <p className="text-sm text-yellow-600 dark:text-yellow-400">
+            <strong>No projects found.</strong> Create projects first before allocating resources.
+          </p>
+        </div>
+      )}
+
+      {roles.length === 0 && (
+        <div className="mb-4 rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-4">
+          <p className="text-sm text-yellow-600 dark:text-yellow-400">
+            <strong>No roles found.</strong> Create roles in Settings before allocating resources.
+          </p>
+        </div>
+      )}
 
       <AllocationsGrid
         allocations={allocations}

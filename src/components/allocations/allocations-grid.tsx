@@ -3,6 +3,14 @@
 import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { AllocationWithRelations, ProjectWithRelations, Role } from "@/types";
 import { Save } from "lucide-react";
 
@@ -145,69 +153,74 @@ export function AllocationsGrid({
           </Button>
         </div>
       )}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse border border-border">
-          <thead>
-            <tr className="bg-muted">
-              <th className="border border-border p-2 text-left font-semibold text-foreground">Project</th>
-              <th className="border border-border p-2 text-left font-semibold text-foreground">Role</th>
+      <div className="rounded-lg border bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[200px]">Project</TableHead>
+              <TableHead className="w-[150px]">Role</TableHead>
               {weeks.map((week) => (
-                <th key={week} className="border border-border p-2 text-center font-semibold text-foreground">
-                  Week {week}
-                </th>
+                <TableHead key={week} className="text-center min-w-[200px]">
+                  <div className="font-semibold">Week {week}</div>
+                  <div className="text-xs font-normal text-muted-foreground mt-1 flex gap-4 justify-center">
+                    <span>Planned</span>
+                    <span>Actual</span>
+                  </div>
+                </TableHead>
               ))}
-            </tr>
-            <tr className="bg-muted">
-              <th colSpan={2} className="border border-border p-2"></th>
-              {weeks.map((week) => (
-                <th key={week} className="border border-border p-1 text-xs text-foreground">
-                  <div>Planned</div>
-                  <div>Actual</div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {gridData.map((row) => (
-              <tr key={`${row.projectId}-${row.roleId}`} className="bg-card">
-                <td className="border border-border p-2 font-medium text-foreground">{row.projectName}</td>
-                <td className="border border-border p-2 text-foreground">{row.roleName}</td>
-                {weeks.map((week) => {
-                  const allocation = row.allocations[week];
-                  const key = allocation ? allocation.id : `${row.projectId}-${row.roleId}-${week}`;
-                  const edit = edits[key];
-                  const plannedHours = edit?.plannedHours ?? (allocation ? Number(allocation.plannedHours) : 0);
-                  const actualHours = edit?.actualHours ?? (allocation ? Number(allocation.actualHours) : 0);
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {gridData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={2 + weeks.length} className="text-center text-muted-foreground py-8">
+                  No projects or roles found. Create projects and roles first, then enter hours in the cells to create allocations.
+                </TableCell>
+              </TableRow>
+            ) : (
+              gridData.map((row) => (
+                <TableRow key={`${row.projectId}-${row.roleId}`}>
+                  <TableCell className="font-medium">{row.projectName}</TableCell>
+                  <TableCell>{row.roleName}</TableCell>
+                  {weeks.map((week) => {
+                    const allocation = row.allocations[week];
+                    const key = allocation ? allocation.id : `${row.projectId}-${row.roleId}-${week}`;
+                    const edit = edits[key];
+                    const plannedHours = edit?.plannedHours ?? (allocation ? Number(allocation.plannedHours) : 0);
+                    const actualHours = edit?.actualHours ?? (allocation ? Number(allocation.actualHours) : 0);
 
-                  return (
-                    <td key={week} className="border border-border p-1 bg-card">
-                      <div className="flex gap-1">
-                        <Input
-                          type="number"
-                          step="0.1"
-                          className="h-8 w-20 text-xs"
-                          value={plannedHours}
-                          onChange={(e) =>
-                            handleChange(row.projectId, row.roleId, week, "plannedHours", parseFloat(e.target.value) || 0)
-                          }
-                        />
-                        <Input
-                          type="number"
-                          step="0.1"
-                          className="h-8 w-20 text-xs"
-                          value={actualHours}
-                          onChange={(e) =>
-                            handleChange(row.projectId, row.roleId, week, "actualHours", parseFloat(e.target.value) || 0)
-                          }
-                        />
-                      </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                    return (
+                      <TableCell key={week}>
+                        <div className="flex gap-2 justify-center">
+                          <Input
+                            type="number"
+                            step="0.1"
+                            className="h-8 w-20 text-xs"
+                            placeholder="0"
+                            value={plannedHours || ""}
+                            onChange={(e) =>
+                              handleChange(row.projectId, row.roleId, week, "plannedHours", parseFloat(e.target.value) || 0)
+                            }
+                          />
+                          <Input
+                            type="number"
+                            step="0.1"
+                            className="h-8 w-20 text-xs"
+                            placeholder="0"
+                            value={actualHours || ""}
+                            onChange={(e) =>
+                              handleChange(row.projectId, row.roleId, week, "actualHours", parseFloat(e.target.value) || 0)
+                            }
+                          />
+                        </div>
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
