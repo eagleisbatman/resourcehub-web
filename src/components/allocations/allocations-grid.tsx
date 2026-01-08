@@ -11,16 +11,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { AllocationWithRelations, ProjectWithRelations, Role } from "@/types";
+import { AllocationWithResources, ProjectWithRelations, Role, Resource } from "@/types";
+import { AllocationResourcesCell } from "@/components/allocations/allocation-resources-cell";
 import { Save } from "lucide-react";
 
 interface AllocationsGridProps {
-  allocations: AllocationWithRelations[];
+  allocations: AllocationWithResources[];
   projects: ProjectWithRelations[];
   roles: Role[];
+  resources: Resource[];
   year: number;
   month: number;
   onSave: (updates: Array<{ id: string; plannedHours: number; actualHours: number }>) => void;
+  onAssignResource?: (allocationId: string, roleId: string) => void;
 }
 
 function getWeeksInMonth(year: number, month: number): number[] {
@@ -44,9 +47,11 @@ export function AllocationsGrid({
   allocations,
   projects,
   roles,
+  resources,
   year,
   month,
   onSave,
+  onAssignResource,
 }: AllocationsGridProps) {
   const weeks = getWeeksInMonth(year, month);
   const [edits, setEdits] = useState<Record<string, { plannedHours: number; actualHours: number }>>(
@@ -60,7 +65,7 @@ export function AllocationsGrid({
       projectName: string;
       roleId: string;
       roleName: string;
-      allocations: Record<number, AllocationWithRelations>;
+      allocations: Record<number, AllocationWithResources>;
     }> = [];
 
     projects.forEach((project) => {
@@ -159,6 +164,7 @@ export function AllocationsGrid({
             <TableRow>
               <TableHead className="w-[200px]">Project</TableHead>
               <TableHead className="w-[150px]">Role</TableHead>
+              <TableHead className="w-[200px]">Resources</TableHead>
               {weeks.map((week) => (
                 <TableHead key={week} className="text-center min-w-[200px]">
                   <div className="font-semibold">Week {week}</div>
@@ -173,16 +179,33 @@ export function AllocationsGrid({
           <TableBody>
             {gridData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={2 + weeks.length} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={3 + weeks.length} className="text-center text-muted-foreground py-8">
                   No projects or roles found. Create projects and roles first, then enter hours in the cells to create allocations.
                 </TableCell>
               </TableRow>
             ) : (
-              gridData.map((row) => (
-                <TableRow key={`${row.projectId}-${row.roleId}`}>
-                  <TableCell className="font-medium">{row.projectName}</TableCell>
-                  <TableCell>{row.roleName}</TableCell>
-                  {weeks.map((week) => {
+              gridData.map((row) => {
+                const firstAllocation = Object.values(row.allocations)[0];
+                return (
+                  <TableRow key={`${row.projectId}-${row.roleId}`}>
+                    <TableCell className="font-medium">{row.projectName}</TableCell>
+                    <TableCell>{row.roleName}</TableCell>
+                    <TableCell>
+                      {firstAllocation ? (
+                        <AllocationResourcesCell
+                          resourceIds={firstAllocation.resourceIds}
+                          resources={resources}
+                          onAdd={() => onAssignResource?.(firstAllocation.id, row.roleId)}
+                        />
+                      ) : (
+                        <AllocationResourcesCell
+                          resourceIds={[]}
+                          resources={resources}
+                          onAdd={() => {}}
+                        />
+                      )}
+                    </TableCell>
+                    {weeks.map((week) => {
                     const allocation = row.allocations[week];
                     const key = allocation ? allocation.id : `${row.projectId}-${row.roleId}-${week}`;
                     const edit = edits[key];
@@ -216,8 +239,9 @@ export function AllocationsGrid({
                       </TableCell>
                     );
                   })}
-                </TableRow>
-              ))
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>

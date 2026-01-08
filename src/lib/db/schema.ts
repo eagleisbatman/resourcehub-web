@@ -3,6 +3,7 @@ import { relations } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 
 export const userRoleEnum = pgEnum("user_role", ["SUPER_ADMIN", "ADMIN"]);
+export const leaveTypeEnum = pgEnum("leave_type", ["leave", "sick", "vacation", "unavailable"]);
 
 export const users = pgTable("users", {
   id: text("id").primaryKey().$defaultFn(() => createId()),
@@ -69,6 +70,20 @@ export const resources = pgTable("resources", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
 });
+
+export const resourceLeaves = pgTable("resource_leaves", {
+  id: text("id").primaryKey().$defaultFn(() => createId()),
+  resourceId: text("resource_id").notNull().references(() => resources.id, { onDelete: "cascade" }),
+  leaveType: leaveTypeEnum("leave_type").notNull().default("leave"),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+}, (table) => ({
+  resourceIdIndex: index("resource_leaves_resource_id_idx").on(table.resourceId),
+  datesIndex: index("resource_leaves_dates_idx").on(table.startDate, table.endDate),
+}));
 
 export const allocations = pgTable("allocations", {
   id: text("id").primaryKey().$defaultFn(() => createId()),
@@ -152,8 +167,9 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   allocations: many(allocations),
 }));
 
-export const resourcesRelations = relations(resources, ({ one }) => ({
+export const resourcesRelations = relations(resources, ({ one, many }) => ({
   role: one(roles, { fields: [resources.roleId], references: [roles.id] }),
+  leaves: many(resourceLeaves),
 }));
 
 export const allocationsRelations = relations(allocations, ({ one }) => ({
@@ -170,6 +186,10 @@ export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
   user: one(users, { fields: [apiKeys.userId], references: [users.id] }),
 }));
 
+export const resourceLeavesRelations = relations(resourceLeaves, ({ one }) => ({
+  resource: one(resources, { fields: [resourceLeaves.resourceId], references: [resources.id] }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Project = typeof projects.$inferSelect;
@@ -183,4 +203,6 @@ export type Flag = typeof flags.$inferSelect;
 export type Role = typeof roles.$inferSelect;
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type NewApiKey = typeof apiKeys.$inferInsert;
+export type ResourceLeave = typeof resourceLeaves.$inferSelect;
+export type NewResourceLeave = typeof resourceLeaves.$inferInsert;
 

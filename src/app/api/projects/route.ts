@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { projects, statuses, projectFlags, flags } from "@/lib/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { projects, statuses, projectFlags, flags, allocations, resources, roles, resourceLeaves } from "@/lib/db/schema";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
+import { getResourceStatus } from "@/lib/resource-utils";
 
 export async function GET(req: NextRequest) {
   try {
@@ -41,11 +42,99 @@ export async function GET(req: NextRequest) {
       flagsMap.get(pf.project_flags.projectId)!.push(pf.flags);
     });
 
-    const result = projectsList.map((p) => ({
-      ...p.project,
-      status: p.status,
-      flags: flagsMap.get(p.project.id) || [],
-    }));
+    // Get current month allocations
+    const today = new Date();
+    const currentMonth = today.getMonth() + 1;
+    const currentYear = today.getFullYear();
+
+    const allAllocations = await db
+      .select()
+      .from(allocations)
+      .where(
+        and(
+          eq(allocations.year, currentYear),
+          eq(allocations.month, currentMonth)
+        )
+      );
+
+    // Get all resources and roles
+    const allResources = await db
+      .select({
+        resource: resources,
+        role: roles,
+      })
+      .from(resources)
+      .innerJoin(roles, eq(resources.roleId, roles.id));
+
+    // Get all leaves for status calculation
+    const allLeaves = await db.select().from(resourceLeaves);
+
+    const result = projectsList.map((p) => {
+      const project = p.project;
+      const projectAllocations = allAllocations.filter(
+        (alloc) => alloc.projectId === project.id
+      );
+
+      // Extract unique resource IDs from allocations
+      const resourceIdSet = new Set<string>();
+      projectAllocations.forEach((alloc) => {
+        alloc.resourceIds.forEach((id) => resourceIdSet.add(id));
+      });
+
+      // Get resource details
+      const allocatedResources = Array.from(resourceIdSet)
+        .map((resourceId) => {
+          const resourceData = allResources.find(
+            (r) => r.resource.id === resourceId
+          );
+          if (!resourceData) return null;
+
+          const resourceAllocations = allAllocations.filter(
+            (alloc) =>
+              alloc.resourceIds.includes(resourceId) &&
+              alloc.projectId === project.id
+          );
+
+          const resourceLeavesList = allLeaves.filter(
+            (leave) => leave.resourceId === resourceId
+          );
+
+          const status = getResourceStatus(
+            resourceData.resource,
+            resourceAllocations,
+            resourceLeavesList
+          );
+
+          const plannedHours = resourceAllocations.reduce(
+            (sum, alloc) => sum + Number(alloc.plannedHours),
+            0
+          );
+
+          return {
+            id: resourceData.resource.id,
+            name: resourceData.resource.name,
+            code: resourceData.resource.code,
+            role: resourceData.role.name,
+            status,
+            plannedHours: Math.round(plannedHours * 10) / 10,
+          };
+        })
+        .filter((r): r is NonNullable<typeof r> => r !== null);
+
+      const totalPlannedHours = projectAllocations.reduce(
+        (sum, alloc) => sum + Number(alloc.plannedHours),
+        0
+      );
+
+      return {
+        ...project,
+        status: p.status,
+        flags: flagsMap.get(project.id) || [],
+        allocatedResources,
+        resourceCount: allocatedResources.length,
+        totalPlannedHours: Math.round(totalPlannedHours * 10) / 10,
+      };
+    });
 
     return NextResponse.json({ data: result });
   } catch (error) {

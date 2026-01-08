@@ -3,32 +3,41 @@
 import { useState, useEffect, useCallback } from "react";
 import { MonthSelector } from "@/components/allocations/month-selector";
 import { AllocationsGrid } from "@/components/allocations/allocations-grid";
-import { AllocationWithRelations, ProjectWithRelations, Role } from "@/types";
+import { LeaveWarningBanner } from "@/components/allocations/leave-warning-banner";
+import { AssignResourceDialog } from "@/components/allocations/assign-resource-dialog";
+import { AllocationWithResources, ProjectWithRelations, Role, Resource } from "@/types";
 
 export default function AllocationsPage() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [allocations, setAllocations] = useState<AllocationWithRelations[]>([]);
+  const [allocations, setAllocations] = useState<AllocationWithResources[]>([]);
   const [projects, setProjects] = useState<ProjectWithRelations[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [selectedAllocationId, setSelectedAllocationId] = useState<string>("");
+  const [selectedRoleId, setSelectedRoleId] = useState<string>("");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [allocationsRes, projectsRes, rolesRes] = await Promise.all([
+      const [allocationsRes, projectsRes, rolesRes, resourcesRes] = await Promise.all([
         fetch(`/api/allocations?year=${year}&month=${month}`),
         fetch("/api/projects?archived=false"),
         fetch("/api/config/roles"),
+        fetch("/api/resources"),
       ]);
 
       const allocationsData = await allocationsRes.json();
       const projectsData = await projectsRes.json();
       const rolesData = await rolesRes.json();
+      const resourcesData = await resourcesRes.json();
 
       setAllocations(allocationsData.data || []);
       setProjects(projectsData.data || []);
       setRoles(rolesData.data || []);
+      setResources(resourcesData.data || []);
     } catch (error) {
       console.error("Failed to fetch data:", error);
     } finally {
@@ -145,13 +154,33 @@ export default function AllocationsPage() {
         </div>
       )}
 
+      <LeaveWarningBanner year={year} month={month} />
+
       <AllocationsGrid
         allocations={allocations}
         projects={projects}
         roles={roles}
+        resources={resources}
         year={year}
         month={month}
         onSave={handleSave}
+        onAssignResource={(allocationId, roleId) => {
+          setSelectedAllocationId(allocationId);
+          setSelectedRoleId(roleId);
+          setAssignDialogOpen(true);
+        }}
+      />
+
+      <AssignResourceDialog
+        open={assignDialogOpen}
+        onOpenChange={setAssignDialogOpen}
+        allocationId={selectedAllocationId}
+        currentResourceIds={
+          allocations.find((a) => a.id === selectedAllocationId)?.resourceIds || []
+        }
+        resources={resources}
+        roleId={selectedRoleId}
+        onSuccess={fetchData}
       />
     </div>
   );

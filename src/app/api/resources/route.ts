@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { resources, roles } from "@/lib/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { resources, roles, allocations, projects, resourceLeaves } from "@/lib/db/schema";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
+import {
+  getResourceStatus,
+  getWorkloadPercent,
+  getCurrentProjects,
+} from "@/lib/resource-utils";
 
 export async function GET(req: NextRequest) {
   try {
@@ -28,10 +33,76 @@ export async function GET(req: NextRequest) {
       .where(and(...whereConditions))
       .orderBy(desc(resources.createdAt));
 
-    const result = resourcesList.map((r) => ({
-      ...r.resource,
-      role: r.role,
-    }));
+    // Get current month allocations
+    const today = new Date();
+    const currentMonth = today.getMonth() + 1;
+    const currentYear = today.getFullYear();
+
+    const allAllocations = await db
+      .select()
+      .from(allocations)
+      .where(
+        and(
+          eq(allocations.year, currentYear),
+          eq(allocations.month, currentMonth)
+        )
+      );
+
+    // Get all leaves
+    const allLeaves = await db.select().from(resourceLeaves);
+
+    // Get all projects for current projects calculation
+    const allProjects = await db.select().from(projects);
+
+    const result = resourcesList.map((r) => {
+      const resource = r.resource;
+      const resourceAllocations = allAllocations.filter((alloc) =>
+        alloc.resourceIds.includes(resource.id)
+      );
+      const resourceLeavesList = allLeaves.filter(
+        (leave) => leave.resourceId === resource.id
+      );
+
+      const todayDate = new Date();
+      todayDate.setHours(0, 0, 0, 0);
+
+      const currentLeave =
+        resourceLeavesList.find((leave) => {
+          const startDate = new Date(leave.startDate);
+          const endDate = new Date(leave.endDate);
+          startDate.setHours(0, 0, 0, 0);
+          endDate.setHours(23, 59, 59, 999);
+          return startDate <= todayDate && endDate >= todayDate;
+        }) || null;
+
+      const upcomingLeaves = resourceLeavesList.filter((leave) => {
+        const startDate = new Date(leave.startDate);
+        startDate.setHours(0, 0, 0, 0);
+        return startDate > todayDate;
+      });
+
+      const status = getResourceStatus(
+        resource,
+        resourceAllocations,
+        resourceLeavesList
+      );
+      const workloadPercent = getWorkloadPercent(resource, resourceAllocations);
+      const currentProjectsList = getCurrentProjects(
+        resource,
+        resourceAllocations,
+        allProjects
+      );
+
+      return {
+        ...resource,
+        role: r.role,
+        status,
+        workloadPercent,
+        currentProjects: currentProjectsList,
+        currentLeave,
+        upcomingLeaves,
+      };
+    });
 
     return NextResponse.json({ data: result });
   } catch (error) {

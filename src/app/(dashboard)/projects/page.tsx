@@ -12,11 +12,12 @@ import {
 } from "@/components/ui/table";
 import { ProjectForm } from "@/components/projects/project-form";
 import { StatusBadge } from "@/components/projects/status-badge";
-import { ProjectWithRelations, Status, Flag } from "@/types";
+import { ProjectResourcesCell } from "@/components/projects/project-resources-cell";
+import { ProjectWithResources, Status, Flag } from "@/types";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<ProjectWithRelations[]>([]);
+  const [projects, setProjects] = useState<ProjectWithResources[]>([]);
   const [statuses, setStatuses] = useState<Status[]>([]);
   const [flags, setFlags] = useState<Flag[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,8 +95,8 @@ export default function ProjectsPage() {
               <TableHead>Name</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Flags</TableHead>
-              <TableHead>Start Date</TableHead>
-              <TableHead>End Date</TableHead>
+              <TableHead>Resources</TableHead>
+              <TableHead>Hours</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -131,10 +132,12 @@ export default function ProjectsPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {project.startDate ? new Date(project.startDate).toLocaleDateString() : "-"}
+                    <ProjectResourcesCell project={project} />
                   </TableCell>
                   <TableCell>
-                    {project.endDate ? new Date(project.endDate).toLocaleDateString() : "-"}
+                    {project.totalPlannedHours > 0
+                      ? `${project.totalPlannedHours}h`
+                      : "-"}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">

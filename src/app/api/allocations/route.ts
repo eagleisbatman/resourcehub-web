@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { allocations, projects, statuses, roles } from "@/lib/db/schema";
-import { eq, and, asc } from "drizzle-orm";
+import { allocations, projects, statuses, roles, resources } from "@/lib/db/schema";
+import { eq, and, asc, sql } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest) {
@@ -40,14 +40,42 @@ export async function GET(req: NextRequest) {
       .where(and(...whereConditions))
       .orderBy(asc(projects.name), asc(roles.order), asc(allocations.week));
 
-    const result = allocationsList.map((a) => ({
-      ...a.allocation,
-      project: {
-        ...a.project,
-        status: a.status,
-      },
-      role: a.role,
-    }));
+    // Extract all unique resource IDs
+    const resourceIdSet = new Set<string>();
+    allocationsList.forEach((a) => {
+      a.allocation.resourceIds.forEach((id) => resourceIdSet.add(id));
+    });
+
+    // Fetch all resources
+    const allResources = resourceIdSet.size > 0
+      ? await db
+          .select()
+          .from(resources)
+          .where(sql`${resources.id} = ANY(${Array.from(resourceIdSet)})`)
+      : [];
+
+    const resourcesMap = new Map(allResources.map((r) => [r.id, r]));
+
+    const result = allocationsList.map((a) => {
+      const allocationResources = a.allocation.resourceIds
+        .map((id) => {
+          const resource = resourcesMap.get(id);
+          return resource
+            ? { id: resource.id, name: resource.name, code: resource.code }
+            : null;
+        })
+        .filter((r): r is NonNullable<typeof r> => r !== null);
+
+      return {
+        ...a.allocation,
+        project: {
+          ...a.project,
+          status: a.status,
+        },
+        role: a.role,
+        resources: allocationResources,
+      };
+    });
 
     return NextResponse.json({ data: result });
   } catch (error) {
@@ -95,6 +123,21 @@ export async function POST(req: NextRequest) {
 
     const [role] = await db.select().from(roles).where(eq(roles.id, allocation.roleId)).limit(1);
 
+    // Populate resources
+    const allocationResources =
+      allocation.resourceIds.length > 0
+        ? await db
+            .select()
+            .from(resources)
+            .where(sql`${resources.id} = ANY(${allocation.resourceIds})`)
+        : [];
+
+    const resourcesArray = allocationResources.map((r) => ({
+      id: r.id,
+      name: r.name,
+      code: r.code,
+    }));
+
     return NextResponse.json({
       data: {
         ...allocation,
@@ -103,6 +146,7 @@ export async function POST(req: NextRequest) {
           status: projectResult?.status,
         },
         role,
+        resources: resourcesArray,
       },
     });
   } catch (error: unknown) {

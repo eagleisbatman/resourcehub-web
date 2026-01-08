@@ -215,14 +215,14 @@ export function ResourceForm({
               <div className="space-y-2">
                 <Label htmlFor="projectId">Primary Project (Optional)</Label>
                 <Select
-                  value={formData.projectId}
-                  onValueChange={(value) => setFormData({ ...formData, projectId: value })}
+                  value={formData.projectId || undefined}
+                  onValueChange={(value) => setFormData({ ...formData, projectId: value === "none" ? "" : value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select project (for reference)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {projects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.code} - {project.name}

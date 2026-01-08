@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { allocations, projects, statuses, roles } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { allocations, projects, statuses, roles, resources } from "@/lib/db/schema";
+import { eq, sql } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -30,6 +30,21 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       );
     }
 
+    // Populate resources
+    const allocationResources =
+      result.allocation.resourceIds.length > 0
+        ? await db
+            .select()
+            .from(resources)
+            .where(sql`${resources.id} = ANY(${result.allocation.resourceIds})`)
+        : [];
+
+    const resourcesArray = allocationResources.map((r) => ({
+      id: r.id,
+      name: r.name,
+      code: r.code,
+    }));
+
     return NextResponse.json({
       data: {
         ...result.allocation,
@@ -38,6 +53,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
           status: result.status,
         },
         role: result.role,
+        resources: resourcesArray,
       },
     });
   } catch (error) {
@@ -84,6 +100,21 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     const [role] = await db.select().from(roles).where(eq(roles.id, allocation.roleId)).limit(1);
 
+    // Populate resources
+    const allocationResources =
+      allocation.resourceIds.length > 0
+        ? await db
+            .select()
+            .from(resources)
+            .where(sql`${resources.id} = ANY(${allocation.resourceIds})`)
+        : [];
+
+    const resourcesArray = allocationResources.map((r) => ({
+      id: r.id,
+      name: r.name,
+      code: r.code,
+    }));
+
     return NextResponse.json({
       data: {
         ...allocation,
@@ -92,6 +123,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           status: projectResult?.status,
         },
         role,
+        resources: resourcesArray,
       },
     });
   } catch (error: unknown) {

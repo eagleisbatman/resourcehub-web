@@ -11,17 +11,31 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ResourceForm } from "@/components/resources/resource-form";
-import { ResourceWithRole, Role, ProjectWithRelations } from "@/types";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { ResourceStatusSummary } from "@/components/resources/resource-status-summary";
+import { ResourceStatusBadge } from "@/components/resources/resource-status-badge";
+import { LeaveDialog } from "@/components/resources/leave-dialog";
+import { ResourceWithStatus, Role, ProjectWithRelations } from "@/types";
+import { Plus, Pencil, Trash2, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function ResourcesPage() {
-  const [resources, setResources] = useState<ResourceWithRole[]>([]);
+  const [resources, setResources] = useState<ResourceWithStatus[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [projects, setProjects] = useState<ProjectWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
-  const [editingResource, setEditingResource] = useState<ResourceWithRole | undefined>();
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [editingResource, setEditingResource] = useState<ResourceWithStatus | undefined>();
+  const [selectedResourceId, setSelectedResourceId] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
 
   useEffect(() => {
     fetchData();
@@ -72,6 +86,17 @@ export default function ResourcesPage() {
     setFormOpen(true);
   };
 
+  const handleAddLeave = (resourceId: string) => {
+    setSelectedResourceId(resourceId);
+    setLeaveDialogOpen(true);
+  };
+
+  const filteredResources = resources.filter((resource) => {
+    if (statusFilter !== "all" && resource.status !== statusFilter) return false;
+    if (roleFilter !== "all" && resource.roleId !== roleFilter) return false;
+    return true;
+  });
+
   if (loading) {
     return <div className="p-6">Loading...</div>;
   }
@@ -86,42 +111,76 @@ export default function ResourcesPage() {
         </Button>
       </div>
 
+      <ResourceStatusSummary resources={resources} />
+
+      <div className="mb-4 flex gap-4">
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="available">Available</SelectItem>
+            <SelectItem value="working">Working</SelectItem>
+            <SelectItem value="on_leave">On Leave</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={roleFilter} onValueChange={setRoleFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by role" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Roles</SelectItem>
+            {roles.map((role) => (
+              <SelectItem key={role.id} value={role.id}>
+                {role.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="rounded-lg border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Code</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead>Specialization</TableHead>
-              <TableHead>Availability</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Workload</TableHead>
+              <TableHead>Current Projects</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {resources.length === 0 ? (
+            {filteredResources.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
+                <TableCell colSpan={7} className="text-center text-muted-foreground">
                   No resources found
                 </TableCell>
               </TableRow>
             ) : (
-              resources.map((resource) => (
+              filteredResources.map((resource) => (
                 <TableRow key={resource.id}>
                   <TableCell className="font-medium">{resource.code}</TableCell>
                   <TableCell>{resource.name}</TableCell>
-                  <TableCell>{resource.email || "-"}</TableCell>
                   <TableCell>
                     <Badge variant="outline">{resource.role.name}</Badge>
                   </TableCell>
-                  <TableCell>{resource.specialization || "-"}</TableCell>
-                  <TableCell>{resource.availability}%</TableCell>
                   <TableCell>
-                    <Badge variant={resource.isActive ? "default" : "secondary"}>
-                      {resource.isActive ? "Active" : "Inactive"}
-                    </Badge>
+                    <ResourceStatusBadge status={resource.status} />
+                  </TableCell>
+                  <TableCell>
+                    <span className={resource.workloadPercent > 100 ? "text-red-600 font-semibold" : ""}>
+                      {resource.workloadPercent}%
+                      {resource.workloadPercent > 100 && " ⚠️"}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    {resource.currentProjects.length > 0
+                      ? resource.currentProjects.map((p) => p.code).join(", ")
+                      : "-"}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
@@ -129,13 +188,23 @@ export default function ResourcesPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(resource)}
+                        title="Edit"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
+                        onClick={() => handleAddLeave(resource.id)}
+                        title="Add Leave"
+                      >
+                        <Calendar className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => handleDelete(resource.id)}
+                        title="Delete"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -154,6 +223,12 @@ export default function ResourcesPage() {
         resource={editingResource}
         roles={roles}
         projects={projects}
+        onSuccess={fetchData}
+      />
+      <LeaveDialog
+        open={leaveDialogOpen}
+        onOpenChange={setLeaveDialogOpen}
+        resourceId={selectedResourceId}
         onSuccess={fetchData}
       />
     </div>
