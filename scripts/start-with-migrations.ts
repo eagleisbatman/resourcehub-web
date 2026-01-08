@@ -6,6 +6,9 @@ import { spawn } from "child_process";
 async function runMigrationsAndStart() {
   const connectionString = process.env.DATABASE_URL;
   
+  console.log("📦 Current working directory:", process.cwd());
+  console.log("🔗 DATABASE_URL:", connectionString ? "✅ Set" : "❌ Not set");
+  
   if (!connectionString) {
     console.error("❌ DATABASE_URL not set. Cannot run migrations.");
     process.exit(1);
@@ -32,7 +35,11 @@ async function runMigrationsAndStart() {
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
     console.error("❌ Migration error:", errorMessage);
+    if (errorStack) {
+      console.error("Stack trace:", errorStack);
+    }
     
     // If migrations already applied, continue anyway
     if (errorMessage.includes("already exists") || errorMessage.includes("duplicate")) {

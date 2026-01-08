@@ -10,25 +10,47 @@ export async function runMigrations() {
     throw new Error("DATABASE_URL is not set");
   }
 
+  console.log("📁 Current working directory:", process.cwd());
+  
+  const migrationsFolder = path.join(process.cwd(), "drizzle/migrations");
+  console.log("📂 Looking for migrations in:", migrationsFolder);
+  console.log("📂 Migrations folder exists:", fs.existsSync(migrationsFolder));
+
+  if (!fs.existsSync(migrationsFolder)) {
+    // Try alternative paths
+    const altPath1 = path.join(process.cwd(), "..", "drizzle", "migrations");
+    const altPath2 = path.join(__dirname, "..", "..", "..", "drizzle", "migrations");
+    console.log("⚠️  Migrations folder not found at:", migrationsFolder);
+    console.log("⚠️  Trying alternative path 1:", altPath1, "exists:", fs.existsSync(altPath1));
+    console.log("⚠️  Trying alternative path 2:", altPath2, "exists:", fs.existsSync(altPath2));
+    
+    if (fs.existsSync(altPath1)) {
+      console.log("✅ Using alternative path 1");
+      return await runMigrationsFromPath(altPath1, connectionString);
+    } else if (fs.existsSync(altPath2)) {
+      console.log("✅ Using alternative path 2");
+      return await runMigrationsFromPath(altPath2, connectionString);
+    }
+    
+    throw new Error(`Migrations folder not found at ${migrationsFolder} or alternative paths`);
+  }
+
+  return await runMigrationsFromPath(migrationsFolder, connectionString);
+}
+
+async function runMigrationsFromPath(migrationsFolder: string, connectionString: string) {
   const client = postgres(connectionString, { max: 1 });
   const db = drizzle(client);
 
-  const migrationsFolder = path.join(process.cwd(), "drizzle/migrations");
-
-  if (!fs.existsSync(migrationsFolder)) {
-    console.log("No migrations folder found, skipping migration");
-    return;
-  }
-
   try {
-    console.log("Running migrations from:", migrationsFolder);
+    console.log("🔄 Running migrations from:", migrationsFolder);
     await migrate(db, { migrationsFolder });
-    console.log("Migrations completed successfully");
+    console.log("✅ Migrations completed successfully");
   } catch (error) {
-    console.error("Migration error:", error);
+    console.error("❌ Migration error:", error);
     // Don't throw - migrations might already be applied (idempotent)
     if (String(error).includes("already exists") || String(error).includes("duplicate")) {
-      console.log("Migration already applied, continuing...");
+      console.log("ℹ️  Migration already applied, continuing...");
     } else {
       throw error;
     }
