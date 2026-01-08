@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ProjectWithRelations, Status, Flag } from "@/types";
-import { generateCode } from "@/lib/utils/code-generator";
 
 interface ProjectFormProps {
   open: boolean;
@@ -131,10 +130,20 @@ export function ProjectForm({
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        const generatedCode = generateCode(formData.name, formData.description);
-                        if (generatedCode) {
-                          setFormData({ ...formData, code: generatedCode });
+                      onClick={async () => {
+                        if (!formData.name) return;
+                        try {
+                          const response = await fetch("/api/projects/generate-code", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ name: formData.name }),
+                          });
+                          if (response.ok) {
+                            const data = await response.json();
+                            setFormData({ ...formData, code: data.data.code });
+                          }
+                        } catch (error) {
+                          console.error("Failed to generate code:", error);
                         }
                       }}
                       disabled={!formData.name}
@@ -152,13 +161,6 @@ export function ProjectForm({
                   onChange={(e) => {
                     const newName = e.target.value;
                     setFormData({ ...formData, name: newName });
-                    // Auto-generate code if code is empty and name is being entered
-                    if (!project && !formData.code && newName) {
-                      const generatedCode = generateCode(newName, formData.description);
-                      if (generatedCode) {
-                        setFormData((prev) => ({ ...prev, name: newName, code: generatedCode }));
-                      }
-                    }
                   }}
                   required
                 />
@@ -170,15 +172,7 @@ export function ProjectForm({
                 id="description"
                 value={formData.description}
                 onChange={(e) => {
-                  const newDescription = e.target.value;
-                  setFormData({ ...formData, description: newDescription });
-                  // Auto-update code if name exists and code was auto-generated
-                  if (!project && formData.name && formData.code === generateCode(formData.name)) {
-                    const generatedCode = generateCode(formData.name, newDescription);
-                    if (generatedCode) {
-                      setFormData((prev) => ({ ...prev, description: newDescription, code: generatedCode }));
-                    }
-                  }
+                  setFormData({ ...formData, description: e.target.value });
                 }}
               />
             </div>

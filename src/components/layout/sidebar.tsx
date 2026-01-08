@@ -19,6 +19,7 @@ const settingsNav = [
   { name: "Statuses", href: "/settings/statuses" },
   { name: "Flags", href: "/settings/flags" },
   { name: "Roles", href: "/settings/roles" },
+  { name: "API Keys", href: "/settings/api-keys" },
   { name: "Users", href: "/settings/users" },
 ];
 

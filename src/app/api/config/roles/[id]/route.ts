@@ -6,7 +6,7 @@ import { requireAuth } from "@/lib/api-utils";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const authError = await requireAuth();
+    const authError = await requireAuth(req);
     if (authError) return authError;
 
     const body = await req.json();
@@ -48,7 +48,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const authError = await requireAuth();
+    const authError = await requireAuth(req);
     if (authError) return authError;
 
     await db.delete(roles).where(eq(roles.id, params.id));

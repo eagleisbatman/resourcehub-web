@@ -6,7 +6,7 @@ import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const authError = await requireAuth();
+    const authError = await requireAuth(req);
     if (authError) return authError;
 
     const [projectResult] = await db

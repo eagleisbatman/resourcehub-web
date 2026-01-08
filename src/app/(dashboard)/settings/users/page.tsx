@@ -91,7 +91,7 @@ export default function UsersPage() {
         <p className="mt-2 text-sm text-gray-600">Manage user roles and access</p>
       </div>
 
-      <div className="rounded-lg border bg-white">
+      <div className="rounded-lg border bg-card">
         <Table>
           <TableHeader>
             <TableRow>

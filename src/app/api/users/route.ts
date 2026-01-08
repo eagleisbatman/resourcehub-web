@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { requireSuperAdmin } from "@/lib/api-utils";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const authError = await requireSuperAdmin();
+    const authError = await requireSuperAdmin(req);
     if (authError) return authError;
 
     const usersList = await db.select({

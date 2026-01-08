@@ -6,7 +6,7 @@ import { requireAuth } from "@/lib/api-utils";
 
 export async function GET() {
   try {
-    const authError = await requireAuth();
+    const authError = await requireAuth(req);
     if (authError) return authError;
 
     const flagsList = await db.select().from(flags).orderBy(asc(flags.order));
@@ -23,7 +23,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const authError = await requireAuth();
+    const authError = await requireAuth(req);
     if (authError) return authError;
 
     const body = await req.json();

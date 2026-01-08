@@ -6,7 +6,7 @@ import { requireAuth } from "@/lib/api-utils";
 
 export async function POST(req: NextRequest) {
   try {
-    const authError = await requireAuth();
+    const authError = await requireAuth(req);
     if (authError) return authError;
 
     const body = await req.json();

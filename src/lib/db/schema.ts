@@ -129,6 +129,22 @@ export const verificationTokens = pgTable("verification_tokens", {
   pk: uniqueIndex("verification_tokens_pk").on(table.identifier, table.token),
 }));
 
+export const apiKeys = pgTable("api_keys", {
+  id: text("id").primaryKey().$defaultFn(() => createId()),
+  name: text("name").notNull(),
+  key: text("key").notNull(),
+  keyPrefix: text("key_prefix").notNull(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  role: userRoleEnum("role").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  lastUsedAt: timestamp("last_used_at"),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  keyIndex: index("api_keys_key_idx").on(table.key),
+  userIdIndex: index("api_keys_user_id_idx").on(table.userId),
+}));
+
 // Relations
 export const projectsRelations = relations(projects, ({ one, many }) => ({
   status: one(statuses, { fields: [projects.statusId], references: [statuses.id] }),
@@ -150,6 +166,10 @@ export const projectFlagsRelations = relations(projectFlags, ({ one }) => ({
   flag: one(flags, { fields: [projectFlags.flagId], references: [flags.id] }),
 }));
 
+export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
+  user: one(users, { fields: [apiKeys.userId], references: [users.id] }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Project = typeof projects.$inferSelect;
@@ -161,4 +181,6 @@ export type NewAllocation = typeof allocations.$inferInsert;
 export type Status = typeof statuses.$inferSelect;
 export type Flag = typeof flags.$inferSelect;
 export type Role = typeof roles.$inferSelect;
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type NewApiKey = typeof apiKeys.$inferInsert;
 

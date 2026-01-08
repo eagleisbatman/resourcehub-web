@@ -20,7 +20,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ResourceWithRole, Role, ProjectWithRelations } from "@/types";
-import { generateCode } from "@/lib/utils/code-generator";
 
 interface ResourceFormProps {
   open: boolean;
@@ -137,10 +136,23 @@ export function ResourceForm({
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        const generatedCode = generateCode(formData.name, formData.specialization);
-                        if (generatedCode) {
-                          setFormData({ ...formData, code: generatedCode });
+                      onClick={async () => {
+                        if (!formData.name) return;
+                        try {
+                          const response = await fetch("/api/resources/generate-code", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ 
+                              name: formData.name,
+                              specialization: formData.specialization 
+                            }),
+                          });
+                          if (response.ok) {
+                            const data = await response.json();
+                            setFormData({ ...formData, code: data.data.code });
+                          }
+                        } catch (error) {
+                          console.error("Failed to generate code:", error);
                         }
                       }}
                       disabled={!formData.name}
@@ -156,15 +168,7 @@ export function ResourceForm({
                   id="name"
                   value={formData.name}
                   onChange={(e) => {
-                    const newName = e.target.value;
-                    setFormData({ ...formData, name: newName });
-                    // Auto-generate code if code is empty and name is being entered
-                    if (!resource && !formData.code && newName) {
-                      const generatedCode = generateCode(newName, formData.specialization);
-                      if (generatedCode) {
-                        setFormData((prev) => ({ ...prev, name: newName, code: generatedCode }));
-                      }
-                    }
+                    setFormData({ ...formData, name: e.target.value });
                   }}
                   required
                 />
@@ -203,15 +207,7 @@ export function ResourceForm({
                 id="specialization"
                 value={formData.specialization}
                 onChange={(e) => {
-                  const newSpecialization = e.target.value;
-                  setFormData({ ...formData, specialization: newSpecialization });
-                  // Auto-update code if name exists and code was auto-generated
-                  if (!resource && formData.name && formData.code === generateCode(formData.name)) {
-                    const generatedCode = generateCode(formData.name, newSpecialization);
-                    if (generatedCode) {
-                      setFormData((prev) => ({ ...prev, specialization: newSpecialization, code: generatedCode }));
-                    }
-                  }
+                  setFormData({ ...formData, specialization: e.target.value });
                 }}
               />
             </div>
