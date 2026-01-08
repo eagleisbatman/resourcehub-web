@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "tsx scripts/start-with-migrations.ts",
+    "start:server-only": "next start",
     "start:with-migrations": "tsx scripts/start-with-migrations.ts",
     "lint": "next lint",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css}\"",
