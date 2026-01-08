@@ -30,7 +30,7 @@ export const authOptions: NextAuthConfig = {
       }
 
       // Check if user exists and is active
-      if (account && account.provider === "google") {
+      if (account && account.provider === "google" && account.providerAccountId) {
         const [existingUser] = await db.select().from(users).where(eq(users.email, user.email)).limit(1);
 
         if (existingUser) {
@@ -45,6 +45,24 @@ export const authOptions: NextAuthConfig = {
               image: user.image || existingUser.image,
             })
             .where(eq(users.email, user.email));
+
+          // Check if account exists but is linked to different user - fix it before NextAuth tries to link
+          const [orphanedAccount] = await db.select()
+            .from(accounts)
+            .where(
+              and(
+                eq(accounts.provider, account.provider),
+                eq(accounts.providerAccountId, account.providerAccountId)
+              )
+            )
+            .limit(1);
+
+          if (orphanedAccount && orphanedAccount.userId !== existingUser.id) {
+            // Account exists but linked to wrong user - update it to link to correct user
+            await db.update(accounts)
+              .set({ userId: existingUser.id })
+              .where(eq(accounts.id, orphanedAccount.id));
+          }
         }
         // If user doesn't exist, let adapter create it (adapter will set role automatically)
       }
