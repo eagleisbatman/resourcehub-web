@@ -13,6 +13,7 @@ const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "";
 
 export const authOptions: NextAuthConfig = {
   adapter: DrizzleAdapter,
+  trustHost: true, // Required for Railway/proxy deployments
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
