@@ -4,7 +4,7 @@ import { roles } from "@/lib/db/schema";
 import { asc } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const authError = await requireAuth(req);
     if (authError) return authError;

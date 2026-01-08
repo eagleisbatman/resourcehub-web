@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { apiKeys, users } from "@/lib/db/schema";
 import { eq, and, desc } from "drizzle-orm";
-import { requireAuth, getAuthUser, requireSuperAdmin } from "@/lib/api-utils";
+import { requireAuth, getAuthUser } from "@/lib/api-utils";
 import { generateApiKey, hashApiKey, extractKeyPrefix } from "@/lib/api-key-utils";
 
 export async function GET(req: NextRequest) {

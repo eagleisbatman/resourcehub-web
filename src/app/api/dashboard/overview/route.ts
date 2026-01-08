@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { projects, resources, allocations } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const authError = await requireAuth(req);
     if (authError) return authError;
