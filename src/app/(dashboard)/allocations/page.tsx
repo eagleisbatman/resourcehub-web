@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { MonthSelector } from "@/components/allocations/month-selector";
 import { AllocationsGrid } from "@/components/allocations/allocations-grid";
 import { AllocationWithRelations, ProjectWithRelations, Role } from "@/types";
@@ -13,11 +13,7 @@ export default function AllocationsPage() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-  }, [year, month]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [allocationsRes, projectsRes, rolesRes] = await Promise.all([
@@ -38,7 +34,11 @@ export default function AllocationsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [year, month]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleSave = async (
     updates: Array<{ id: string; plannedHours: number; actualHours: number }>
