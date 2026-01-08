@@ -76,7 +76,7 @@ export default function ResourcesPage() {
     }
   };
 
-  const handleEdit = (resource: ResourceWithRole) => {
+  const handleEdit = (resource: ResourceWithStatus) => {
     setEditingResource(resource);
     setFormOpen(true);
   };
