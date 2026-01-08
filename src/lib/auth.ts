@@ -2,8 +2,8 @@ import type { NextAuthConfig } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { DrizzleAdapter } from "./db/adapter";
 import { db } from "./db";
-import { users } from "./db/schema";
-import { eq } from "drizzle-orm";
+import { users, accounts } from "./db/schema";
+import { eq, and } from "drizzle-orm";
 import jwt from "jsonwebtoken";
 
 export type UserRole = "SUPER_ADMIN" | "ADMIN";
@@ -29,7 +29,7 @@ export const authOptions: NextAuthConfig = {
         return false;
       }
 
-      // Check if user exists and is active
+      // Check if user exists and is active, and ensure account is linked
       if (account && account.provider === "google") {
         const [existingUser] = await db.select().from(users).where(eq(users.email, user.email)).limit(1);
 
@@ -45,6 +45,22 @@ export const authOptions: NextAuthConfig = {
               image: user.image || existingUser.image,
             })
             .where(eq(users.email, user.email));
+
+          // Check if account is already linked to this user
+          const [existingAccount] = await db.select()
+            .from(accounts)
+            .where(
+              and(
+                eq(accounts.userId, existingUser.id),
+                eq(accounts.provider, account.provider),
+                eq(accounts.providerAccountId, account.providerAccountId)
+              )
+            )
+            .limit(1);
+
+          // If account exists but linked to different user, or doesn't exist, 
+          // NextAuth will handle linking via adapter.linkAccount
+          // We just ensure the user exists and is active
         }
         // If user doesn't exist, let adapter create it (adapter will set role automatically)
       }

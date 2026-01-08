@@ -52,6 +52,7 @@ export const DrizzleAdapter: Adapter = {
   async getUserByAccount({ providerAccountId, provider }) {
     const [account] = await db.select({
       user: users,
+      account: accounts,
     })
       .from(accounts)
       .innerJoin(users, eq(accounts.userId, users.id))
@@ -63,6 +64,7 @@ export const DrizzleAdapter: Adapter = {
       )
       .limit(1);
 
+    // Return user if account exists and is properly linked
     return account?.user ? {
       id: account.user.id,
       email: account.user.email,
@@ -135,13 +137,33 @@ export const DrizzleAdapter: Adapter = {
     if (account.session_state) accountData.session_state = account.session_state;
 
     if (existingAccount) {
-      // Account already exists - update it (might be linking to different user)
+      // Account already exists - update it to link to current user
+      // This handles the case where account was linked to a different user
       await db.update(accounts)
         .set(accountData as typeof accounts.$inferInsert)
         .where(eq(accounts.id, existingAccount.id));
     } else {
-      // Create new account link
-      await db.insert(accounts).values(accountData as typeof accounts.$inferInsert);
+      // Check if account already exists for this user + provider (different providerAccountId)
+      // This shouldn't happen for Google OAuth, but handle it just in case
+      const [userAccount] = await db.select()
+        .from(accounts)
+        .where(
+          and(
+            eq(accounts.userId, account.userId),
+            eq(accounts.provider, account.provider)
+          )
+        )
+        .limit(1);
+
+      if (userAccount) {
+        // Update existing account for this user/provider combination
+        await db.update(accounts)
+          .set(accountData as typeof accounts.$inferInsert)
+          .where(eq(accounts.id, userAccount.id));
+      } else {
+        // Create new account link
+        await db.insert(accounts).values(accountData as typeof accounts.$inferInsert);
+      }
     }
   },
   async createSession({ sessionToken, userId, expires }) {
