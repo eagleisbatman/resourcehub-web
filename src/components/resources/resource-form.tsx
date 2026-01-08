@@ -83,7 +83,14 @@ export function ResourceForm({
       const method = resource ? "PATCH" : "POST";
 
       // Remove projectId from payload as resources are linked via allocations
-      const { projectId, ...payload } = formData;
+      const payload = {
+        code: formData.code,
+        name: formData.name,
+        email: formData.email,
+        roleId: formData.roleId,
+        specialization: formData.specialization,
+        availability: formData.availability,
+      };
       
       const response = await fetch(url, {
         method,
