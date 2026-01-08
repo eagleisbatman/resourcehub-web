@@ -33,6 +33,8 @@ export async function GET(req: NextRequest) {
       .where(and(...whereConditions))
       .orderBy(desc(resources.createdAt));
 
+    console.log(`[Resources API] Found ${resourcesList.length} resources with valid roles (filter: isActive=${isActive})`);
+
     // Get current month allocations
     const today = new Date();
     const currentMonth = today.getMonth() + 1;

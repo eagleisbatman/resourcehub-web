@@ -29,6 +29,8 @@ export async function GET(req: NextRequest) {
       .where(and(...whereConditions))
       .orderBy(desc(projects.createdAt));
 
+    console.log(`[Projects API] Found ${projectsList.length} projects with valid statuses (filter: isArchived=${isArchived})`);
+
     const projectFlagsList = await db
       .select()
       .from(projectFlags)
