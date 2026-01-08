@@ -50,7 +50,7 @@ export function ResourceAllocationsGrid({
     {}
   );
   const [saving, setSaving] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("all");
 
   // Group allocations by project and resource
   const gridData = useMemo(() => {
@@ -193,12 +193,12 @@ export function ResourceAllocationsGrid({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+        <Select value={selectedProjectId || "all"} onValueChange={(value) => setSelectedProjectId(value === "all" ? "" : value)}>
           <SelectTrigger className="w-[250px]">
             <SelectValue placeholder="Filter by project (optional)" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Projects</SelectItem>
+            <SelectItem value="all">All Projects</SelectItem>
             {projects.map((project) => (
               <SelectItem key={project.id} value={project.id}>
                 {project.name}
