@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { MonthSelector } from "@/components/allocations/month-selector";
-import { AllocationsGrid } from "@/components/allocations/allocations-grid";
+import { ResourceAllocationsGrid } from "@/components/allocations/resource-allocations-grid";
 import { LeaveWarningBanner } from "@/components/allocations/leave-warning-banner";
 import { AssignResourceDialog } from "@/components/allocations/assign-resource-dialog";
 import { AllocationWithResources, ProjectWithRelations, Role, Resource } from "@/types";
@@ -131,8 +131,8 @@ export default function AllocationsPage() {
         <div>
           <h1 className="text-2xl font-bold">Allocations</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Assign resources to projects by entering hours for each project/role combination. 
-            Each row represents a project and role pair - enter planned and actual hours for each week.
+            View and manage resource allocations to projects. Each row shows a resource allocated to a project, 
+            with planned and actual hours for each week of the month.
           </p>
         </div>
         <MonthSelector year={year} month={month} onYearChange={setYear} onMonthChange={setMonth} />
@@ -146,41 +146,47 @@ export default function AllocationsPage() {
         </div>
       )}
 
-      {roles.length === 0 && (
+      {resources.length === 0 && (
         <div className="mb-4 rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-4">
           <p className="text-sm text-yellow-600 dark:text-yellow-400">
-            <strong>No roles found.</strong> Create roles in Settings before allocating resources.
+            <strong>No resources found.</strong> Create resources first before allocating them to projects.
           </p>
         </div>
       )}
 
       <LeaveWarningBanner year={year} month={month} />
 
-      <AllocationsGrid
+      <ResourceAllocationsGrid
         allocations={allocations}
         projects={projects}
-        roles={roles}
         resources={resources}
         year={year}
         month={month}
         onSave={handleSave}
-        onAssignResource={(allocationId, roleId) => {
-          setSelectedAllocationId(allocationId);
-          setSelectedRoleId(roleId);
-          setAssignDialogOpen(true);
-        }}
-      />
+        onAssignResource={async (projectId, resourceId) => {
+          try {
+            const response = await fetch("/api/allocations/assign-resource", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                projectId,
+                resourceId,
+                year,
+                month,
+              }),
+            });
 
-      <AssignResourceDialog
-        open={assignDialogOpen}
-        onOpenChange={setAssignDialogOpen}
-        allocationId={selectedAllocationId}
-        currentResourceIds={
-          allocations.find((a) => a.id === selectedAllocationId)?.resourceIds || []
-        }
-        resources={resources}
-        roleId={selectedRoleId}
-        onSuccess={fetchData}
+            if (response.ok) {
+              fetchData();
+            } else {
+              const error = await response.json();
+              alert(error.error?.message || "Failed to assign resource");
+            }
+          } catch (error) {
+            console.error("Failed to assign resource:", error);
+            alert("Failed to assign resource");
+          }
+        }}
       />
     </div>
   );

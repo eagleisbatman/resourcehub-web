@@ -81,7 +81,6 @@ export function ResourceForm({
       const url = resource ? `/api/resources/${resource.id}` : "/api/resources";
       const method = resource ? "PATCH" : "POST";
 
-      // Remove projectId from payload as resources are linked via allocations
       const payload = {
         code: formData.code,
         name: formData.name,
@@ -100,6 +99,32 @@ export function ResourceForm({
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error?.message || "Failed to save resource");
+      }
+
+      const resourceData = await response.json();
+      const savedResourceId = resourceData.data?.id || resource?.id;
+
+      // If a project was selected, create allocations for current month
+      if (formData.projectId && savedResourceId) {
+        try {
+          const today = new Date();
+          const currentYear = today.getFullYear();
+          const currentMonth = today.getMonth() + 1;
+
+          await fetch("/api/allocations/assign-resource", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              projectId: formData.projectId,
+              resourceId: savedResourceId,
+              year: currentYear,
+              month: currentMonth,
+            }),
+          });
+        } catch (error) {
+          console.error("Failed to create allocations:", error);
+          // Don't fail the whole operation if allocation creation fails
+        }
       }
 
       onSuccess();
@@ -230,8 +255,8 @@ export function ResourceForm({
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-gray-500">
-                  Note: Resources are linked to projects through allocations. This is for reference only.
+                <p className="text-xs text-muted-foreground">
+                  Assigning a project will create allocations for the current month. You can manage weekly hours in the Allocations page.
                 </p>
               </div>
             )}
