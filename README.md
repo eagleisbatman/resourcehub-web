@@ -130,7 +130,7 @@ Migrations are **idempotent** and run automatically on Railway deployment:
 3. Configure environment variables in Railway dashboard
 4. Migrations run automatically during build
 
-See [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) for detailed deployment instructions.
+See `docs/RAILWAY_DEPLOYMENT.md` for detailed deployment instructions (in parent `docs/` folder).
 
 ## API Documentation
 
@@ -144,7 +144,7 @@ All API endpoints follow RESTful conventions and return consistent JSON response
 { "error": { "code": string, "message": string } }
 ```
 
-See [docs/api.md](../docs/api.md) for complete API documentation.
+See `docs/api.md` for complete API documentation (in parent `docs/` folder).
 
 ## Authentication
 
