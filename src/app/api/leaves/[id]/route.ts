@@ -61,7 +61,7 @@ export async function PATCH(
     const { leaveType, startDate, endDate, notes } = body;
 
     const updateData: {
-      leaveType?: string;
+      leaveType?: "leave" | "sick" | "vacation" | "unavailable";
       startDate?: Date;
       endDate?: Date;
       notes?: string | null;
