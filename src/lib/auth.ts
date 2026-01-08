@@ -9,7 +9,6 @@ import jwt from "jsonwebtoken";
 export type UserRole = "SUPER_ADMIN" | "ADMIN";
 
 const allowedDomains = process.env.ALLOWED_DOMAINS?.split(",") || [];
-const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "";
 
 export const authOptions: NextAuthConfig = {
   adapter: DrizzleAdapter,
