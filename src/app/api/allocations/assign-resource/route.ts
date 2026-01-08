@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { allocations, projects, resources, roles } from "@/lib/db/schema";
+import { allocations, resources } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 import { createId } from "@paralleldrive/cuid2";

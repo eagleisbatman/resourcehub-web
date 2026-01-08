@@ -32,7 +32,6 @@ interface ResourceAllocationsGridProps {
 }
 
 function getWeeksInMonth(year: number, month: number): number[] {
-  const firstDay = new Date(year, month - 1, 1);
   const lastDay = new Date(year, month, 0);
   return [1, 2, 3, 4, 5].filter((w) => w <= Math.ceil(lastDay.getDate() / 7) + 1);
 }
@@ -140,7 +139,6 @@ export function ResourceAllocationsGrid({
     setSaving(true);
     try {
       const updates = Object.entries(edits).map(([key, values]) => {
-        const parts = key.includes("-") ? key.split("-") : [null, null, null];
         const allocation = allocations.find((a) => a.id === key);
 
         return {
