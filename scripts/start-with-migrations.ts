@@ -24,8 +24,8 @@ async function runMigrationsAndStart() {
     console.log("✅ Seed data completed");
     
     console.log("🚀 Starting Next.js server...");
-    // Start Next.js
-    const nextProcess = spawn("npm", ["start"], {
+    // Start Next.js directly (not via npm start to avoid recursion)
+    const nextProcess = spawn("next", ["start"], {
       stdio: "inherit",
       shell: true,
     });
@@ -52,7 +52,7 @@ async function runMigrationsAndStart() {
       
       // Start Next.js even if migrations had issues
       console.log("🚀 Starting Next.js server...");
-      const nextProcess = spawn("npm", ["start"], {
+      const nextProcess = spawn("next", ["start"], {
         stdio: "inherit",
         shell: true,
       });
