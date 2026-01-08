@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { AllocationWithRelations } from "@/types";
+import type { AllocationWithResources } from "@/types";
 
 interface ResourceAllocationGridProps {
   resourceId: string;
@@ -29,14 +29,14 @@ export function ResourceAllocationGrid({
   year,
   month,
 }: ResourceAllocationGridProps) {
-  const [allocations, setAllocations] = useState<AllocationWithRelations[]>([]);
+  const [allocations, setAllocations] = useState<AllocationWithResources[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch(`/api/allocations?year=${year}&month=${month}`)
       .then((res) => res.json())
       .then((data) => {
-        const resourceAllocations = (data.data || []).filter((alloc: AllocationWithRelations) =>
+        const resourceAllocations = (data.data || []).filter((alloc: AllocationWithResources) =>
           alloc.resourceIds.includes(resourceId)
         );
         setAllocations(resourceAllocations);
@@ -50,7 +50,7 @@ export function ResourceAllocationGrid({
   const projectMap = new Map<
     string,
     {
-      project: AllocationWithRelations["project"];
+      project: AllocationWithResources["project"];
       weeks: Record<number, { planned: number; actual: number }>;
     }
   >();
