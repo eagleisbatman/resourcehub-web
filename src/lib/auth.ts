@@ -29,8 +29,8 @@ export const authOptions: NextAuthConfig = {
         return false;
       }
 
-      // Check if user exists and is active, and proactively link account if needed
-      if (account && account.provider === "google" && account.providerAccountId) {
+      // Check if user exists and is active
+      if (account && account.provider === "google") {
         const [existingUser] = await db.select().from(users).where(eq(users.email, user.email)).limit(1);
 
         if (existingUser) {
@@ -45,52 +45,6 @@ export const authOptions: NextAuthConfig = {
               image: user.image || existingUser.image,
             })
             .where(eq(users.email, user.email));
-
-          // Proactively check and link account to prevent OAuthAccountNotLinked error
-          const [existingAccount] = await db.select()
-            .from(accounts)
-            .where(
-              and(
-                eq(accounts.provider, account.provider),
-                eq(accounts.providerAccountId, account.providerAccountId)
-              )
-            )
-            .limit(1);
-
-          if (existingAccount) {
-            // Account exists - ensure it's linked to the correct user
-            if (existingAccount.userId !== existingUser.id) {
-              // Account is linked to different user - update it to link to current user
-              await db.update(accounts)
-                .set({
-                  userId: existingUser.id,
-                  type: account.type,
-                  refresh_token: account.refresh_token || existingAccount.refresh_token,
-                  access_token: account.access_token || existingAccount.access_token,
-                  expires_at: account.expires_at ? Number(account.expires_at) : existingAccount.expires_at,
-                  token_type: account.token_type || existingAccount.token_type,
-                  scope: account.scope || existingAccount.scope,
-                  id_token: account.id_token || existingAccount.id_token,
-                  session_state: account.session_state || existingAccount.session_state,
-                })
-                .where(eq(accounts.id, existingAccount.id));
-            }
-          } else {
-            // Account doesn't exist - create it proactively to prevent NextAuth error
-            await db.insert(accounts).values({
-              userId: existingUser.id,
-              type: account.type,
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-              refresh_token: account.refresh_token || null,
-              access_token: account.access_token || null,
-              expires_at: account.expires_at ? Number(account.expires_at) : null,
-              token_type: account.token_type || null,
-              scope: account.scope || null,
-              id_token: account.id_token || null,
-              session_state: account.session_state || null,
-            });
-          }
         }
         // If user doesn't exist, let adapter create it (adapter will set role automatically)
       }
