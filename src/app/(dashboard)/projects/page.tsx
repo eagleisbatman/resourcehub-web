@@ -22,7 +22,7 @@ export default function ProjectsPage() {
   const [flags, setFlags] = useState<Flag[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<ProjectWithRelations | undefined>();
+  const [editingProject, setEditingProject] = useState<ProjectWithResources | undefined>();
 
   useEffect(() => {
     fetchData();
@@ -63,7 +63,7 @@ export default function ProjectsPage() {
     }
   };
 
-  const handleEdit = (project: ProjectWithRelations) => {
+  const handleEdit = (project: ProjectWithResources) => {
     setEditingProject(project);
     setFormOpen(true);
   };
