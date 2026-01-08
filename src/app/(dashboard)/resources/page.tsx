@@ -53,11 +53,24 @@ export default function ResourcesPage() {
       const rolesData = await rolesRes.json();
       const projectsData = await projectsRes.json();
 
+      if (resourcesData.error) {
+        console.error("Resources API error:", resourcesData.error);
+        alert(`Failed to load resources: ${resourcesData.error.message}`);
+      }
+      if (projectsData.error) {
+        console.error("Projects API error:", projectsData.error);
+      }
+
+      console.log("Resources fetched:", resourcesData.data?.length || 0);
+      console.log("Roles fetched:", rolesData.data?.length || 0);
+      console.log("Projects fetched:", projectsData.data?.length || 0);
+
       setResources(resourcesData.data || []);
       setRoles(rolesData.data || []);
       setProjects(projectsData.data || []);
     } catch (error) {
       console.error("Failed to fetch data:", error);
+      alert("Failed to load data. Please check the console for details.");
     } finally {
       setLoading(false);
     }

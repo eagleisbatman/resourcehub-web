@@ -40,11 +40,21 @@ export default function ProjectsPage() {
       const statusesData = await statusesRes.json();
       const flagsData = await flagsRes.json();
 
+      if (projectsData.error) {
+        console.error("Projects API error:", projectsData.error);
+        alert(`Failed to load projects: ${projectsData.error.message}`);
+      }
+
+      console.log("Projects fetched:", projectsData.data?.length || 0);
+      console.log("Statuses fetched:", statusesData.data?.length || 0);
+      console.log("Flags fetched:", flagsData.data?.length || 0);
+
       setProjects(projectsData.data || []);
       setStatuses(statusesData.data || []);
       setFlags(flagsData.data || []);
     } catch (error) {
       console.error("Failed to fetch data:", error);
+      alert("Failed to load data. Please check the console for details.");
     } finally {
       setLoading(false);
     }
