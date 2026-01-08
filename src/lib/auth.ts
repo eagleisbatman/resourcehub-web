@@ -71,15 +71,12 @@ const authConfig: NextAuthConfig = {
 
       return true;
     },
-    async session({ session }) {
-      if (session.user?.email) {
-        const [dbUser] = await db.select().from(users).where(eq(users.email, session.user.email)).limit(1);
-
-        if (dbUser) {
-          session.user.id = dbUser.id;
-          session.user.role = dbUser.role as UserRole;
-          session.user.isActive = dbUser.isActive;
-        }
+    async session({ session, user }) {
+      // With database sessions, user object contains the database user
+      if (user) {
+        session.user.id = user.id;
+        session.user.role = (user as { role: UserRole }).role;
+        session.user.isActive = (user as { isActive: boolean }).isActive;
       }
       return session;
     },
