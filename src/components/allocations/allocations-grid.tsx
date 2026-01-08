@@ -74,7 +74,7 @@ export function AllocationsGrid({
           (a) => a.projectId === project.id && a.roleId === role.id
         );
 
-        const allocationMap: Record<number, AllocationWithRelations> = {};
+        const allocationMap: Record<number, AllocationWithResources> = {};
         projectAllocations.forEach((alloc) => {
           allocationMap[alloc.week] = alloc;
         });
