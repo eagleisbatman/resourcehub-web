@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { resources, roles, allocations, projects, resourceLeaves, statuses } from "@/lib/db/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 import {
   getResourceStatus,

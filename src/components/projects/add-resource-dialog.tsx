@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { Resource, Role } from "@/types";
+import type { Resource } from "@/types";
 
 interface AddResourceDialogProps {
   open: boolean;

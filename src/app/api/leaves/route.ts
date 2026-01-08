@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { resourceLeaves, resources, roles } from "@/lib/db/schema";
-import { eq, and, gte, lte, or, sql } from "drizzle-orm";
+import { eq, and, gte, lte, or } from "drizzle-orm";
 import { requireAuth } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest) {
@@ -38,7 +38,12 @@ export async function GET(req: NextRequest) {
     }
 
     if (leaveType) {
-      whereConditions.push(eq(resourceLeaves.leaveType, leaveType as any));
+      whereConditions.push(
+        eq(
+          resourceLeaves.leaveType,
+          leaveType as "leave" | "sick" | "vacation" | "unavailable"
+        )
+      );
     }
 
     const leavesList = await db

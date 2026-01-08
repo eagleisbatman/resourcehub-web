@@ -60,7 +60,12 @@ export async function PATCH(
     const body = await req.json();
     const { leaveType, startDate, endDate, notes } = body;
 
-    const updateData: any = {};
+    const updateData: {
+      leaveType?: string;
+      startDate?: Date;
+      endDate?: Date;
+      notes?: string | null;
+    } = {};
     if (leaveType !== undefined) updateData.leaveType = leaveType;
     if (startDate !== undefined) updateData.startDate = new Date(startDate);
     if (endDate !== undefined) updateData.endDate = new Date(endDate);

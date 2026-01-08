@@ -20,7 +20,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { ResourceLeave } from "@/types";
 
 interface LeaveDialogProps {
   open: boolean;
@@ -141,7 +140,7 @@ export function LeaveDialog({
               <Label htmlFor="leaveType">Leave Type *</Label>
               <Select
                 value={formData.leaveType}
-                onValueChange={(value: any) =>
+                onValueChange={(value: "leave" | "sick" | "vacation" | "unavailable") =>
                   setFormData({ ...formData, leaveType: value })
                 }
               >
