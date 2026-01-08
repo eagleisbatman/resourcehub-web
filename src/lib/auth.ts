@@ -24,24 +24,30 @@ export const authOptions: NextAuthConfig = {
     async signIn({ user, account }) {
       if (!user.email) return false;
 
+      // Check domain restriction
       const emailDomain = user.email.split("@")[1];
       if (!allowedDomains.includes(emailDomain)) {
         return false;
       }
 
+      // Check if user exists and is active
       if (account && account.provider === "google") {
         const [existingUser] = await db.select().from(users).where(eq(users.email, user.email)).limit(1);
 
-        if (!existingUser) {
-          await db.insert(users).values({
-            email: user.email,
-            name: user.name || null,
-            image: user.image || null,
-            role: user.email === superAdminEmail ? "SUPER_ADMIN" : "ADMIN",
-          });
-        } else if (!existingUser.isActive) {
-          return false;
+        if (existingUser) {
+          // User exists - check if active
+          if (!existingUser.isActive) {
+            return false;
+          }
+          // Update user info if needed (name, image might have changed)
+          await db.update(users)
+            .set({
+              name: user.name || existingUser.name,
+              image: user.image || existingUser.image,
+            })
+            .where(eq(users.email, user.email));
         }
+        // If user doesn't exist, let adapter create it (adapter will set role automatically)
       }
 
       return true;

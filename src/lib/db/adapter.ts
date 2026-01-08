@@ -5,10 +5,15 @@ import type { Adapter, AdapterUser } from "next-auth/adapters";
 
 export const DrizzleAdapter: Adapter = {
   async createUser(user) {
+    // Determine role based on email (check environment variable)
+    const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || "";
+    const role = user.email === superAdminEmail ? "SUPER_ADMIN" : "ADMIN";
+    
     const [newUser] = await db.insert(users).values({
       email: user.email!,
       name: user.name,
       image: user.image,
+      role,
     }).returning();
     return {
       id: newUser.id,
@@ -104,6 +109,17 @@ export const DrizzleAdapter: Adapter = {
     } as AdapterUser;
   },
   async linkAccount(account) {
+    // Check if account already exists for this provider + providerAccountId
+    const [existingAccount] = await db.select()
+      .from(accounts)
+      .where(
+        and(
+          eq(accounts.provider, account.provider),
+          eq(accounts.providerAccountId, account.providerAccountId)
+        )
+      )
+      .limit(1);
+
     const accountData: Record<string, unknown> = {
       userId: account.userId,
       type: account.type,
@@ -117,8 +133,16 @@ export const DrizzleAdapter: Adapter = {
     if (account.scope) accountData.scope = account.scope;
     if (account.id_token) accountData.id_token = account.id_token;
     if (account.session_state) accountData.session_state = account.session_state;
-    
-    await db.insert(accounts).values(accountData as typeof accounts.$inferInsert);
+
+    if (existingAccount) {
+      // Account already exists - update it (might be linking to different user)
+      await db.update(accounts)
+        .set(accountData as typeof accounts.$inferInsert)
+        .where(eq(accounts.id, existingAccount.id));
+    } else {
+      // Create new account link
+      await db.insert(accounts).values(accountData as typeof accounts.$inferInsert);
+    }
   },
   async createSession({ sessionToken, userId, expires }) {
     const [session] = await db.insert(sessions).values({
