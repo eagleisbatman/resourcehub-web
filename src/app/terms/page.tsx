@@ -18,9 +18,9 @@ export default function TermsOfServicePage() {
         <section>
           <h2 className="text-2xl font-semibold mt-8 mb-4">1. Acceptance of Terms</h2>
           <p>
-            These Terms of Service ("Terms") govern your access to and use of ResourceHub ("Service"), 
+            These Terms of Service (&quot;Terms&quot;) govern your access to and use of ResourceHub (&quot;Service&quot;), 
             an internal resource tracking and management system operated by Digital Green Foundation and 
-            its sister concerns (collectively, "Digital Green," "we," "our," or "us").
+            its sister concerns (collectively, &quot;Digital Green,&quot; &quot;we,&quot; &quot;our,&quot; or &quot;us&quot;).
           </p>
           <p>
             By accessing or using the Service, you agree to be bound by these Terms. If you do not 
@@ -77,7 +77,7 @@ export default function TermsOfServicePage() {
             <li>Reverse engineer, decompile, or disassemble any part of the Service</li>
             <li>Use automated systems (bots, scrapers) to access the Service without authorization</li>
             <li>Share your account credentials with unauthorized persons</li>
-            <li>Access or attempt to access other users' accounts or data without authorization</li>
+            <li>Access or attempt to access other users&apos; accounts or data without authorization</li>
             <li>Modify, adapt, or create derivative works based on the Service</li>
             <li>Remove any copyright, trademark, or proprietary notices from the Service</li>
           </ul>
@@ -194,7 +194,7 @@ export default function TermsOfServicePage() {
         <section>
           <h2 className="text-2xl font-semibold mt-8 mb-4">11. Disclaimers</h2>
           <p>
-            THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER 
+            THE SERVICE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND, EITHER 
             EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR 
             A PARTICULAR PURPOSE, NON-INFRINGEMENT, OR COURSE OF PERFORMANCE.
           </p>
@@ -226,7 +226,7 @@ export default function TermsOfServicePage() {
           <p>
             You agree to defend, indemnify, and hold harmless Digital Green, its affiliates, officers, 
             directors, employees, and agents from and against any claims, liabilities, damages, losses, 
-            and expenses, including without limitation reasonable attorney's fees, arising out of or in 
+            and expenses, including without limitation reasonable attorney&apos;s fees, arising out of or in 
             any way connected with:
           </p>
           <ul className="list-disc pl-6 space-y-2">
@@ -251,7 +251,7 @@ export default function TermsOfServicePage() {
           <h2 className="text-2xl font-semibold mt-8 mb-4">15. Changes to Terms</h2>
           <p>
             We reserve the right to modify these Terms at any time. We will notify you of any material 
-            changes by posting the new Terms on this page and updating the "Last Updated" date. Your 
+            changes by posting the new Terms on this page and updating the &quot;Last Updated&quot; date. Your 
             continued use of the Service after such modifications constitutes acceptance of the updated 
             Terms.
           </p>

@@ -18,10 +18,10 @@ export default function PrivacyPolicyPage() {
         <section>
           <h2 className="text-2xl font-semibold mt-8 mb-4">1. Introduction</h2>
           <p>
-            ResourceHub ("we," "our," or "us") is an internal resource tracking and management system 
-            operated by Digital Green Foundation and its sister concerns (collectively, "Digital Green"). 
+            ResourceHub (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is an internal resource tracking and management system 
+            operated by Digital Green Foundation and its sister concerns (collectively, &quot;Digital Green&quot;). 
             This Privacy Policy explains how we collect, use, disclose, and safeguard your information 
-            when you use our web application and mobile application (collectively, the "Service").
+            when you use our web application and mobile application (collectively, the &quot;Service&quot;).
           </p>
           <p>
             This Service is intended solely for use by authorized employees, contractors, and personnel 
@@ -155,7 +155,7 @@ export default function PrivacyPolicyPage() {
           </ul>
           <p className="mt-4">
             To exercise these rights, please contact your system administrator or send a request to 
-            the email address provided in the "Contact Us" section below.
+            the email address provided in the &quot;Contact Us&quot; section below.
           </p>
         </section>
 
@@ -163,7 +163,7 @@ export default function PrivacyPolicyPage() {
           <h2 className="text-2xl font-semibold mt-8 mb-4">8. Third-Party Services</h2>
           <p>
             Our Service uses Google OAuth for authentication. When you sign in with Google, you are 
-            subject to Google's Privacy Policy. We encourage you to review Google's Privacy Policy 
+            subject to Google&apos;s Privacy Policy. We encourage you to review Google&apos;s Privacy Policy 
             to understand how they collect, use, and share your information.
           </p>
         </section>
@@ -181,7 +181,7 @@ export default function PrivacyPolicyPage() {
           <h2 className="text-2xl font-semibold mt-8 mb-4">10. Changes to This Privacy Policy</h2>
           <p>
             We may update this Privacy Policy from time to time. We will notify you of any material 
-            changes by posting the new Privacy Policy on this page and updating the "Last Updated" 
+            changes by posting the new Privacy Policy on this page and updating the &quot;Last Updated&quot; 
             date. You are advised to review this Privacy Policy periodically for any changes.
           </p>
         </section>
