@@ -20,8 +20,11 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Resource Tracker - Admin",
-  description: "Internal resource tracking system",
+  title: "ResourceHub - Digital Green Foundation",
+  description: "Internal resource tracking and management system",
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
+  },
 };
 
 export default function RootLayout({
