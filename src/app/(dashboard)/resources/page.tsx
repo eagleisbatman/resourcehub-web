@@ -103,7 +103,7 @@ export default function ResourcesPage() {
           <TableBody>
             {resources.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-gray-500">
+                <TableCell colSpan={8} className="text-center text-muted-foreground">
                   No resources found
                 </TableCell>
               </TableRow>

@@ -102,7 +102,7 @@ export default function ProjectsPage() {
           <TableBody>
             {projects.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-gray-500">
+                <TableCell colSpan={7} className="text-center text-muted-foreground">
                   No projects found
                 </TableCell>
               </TableRow>

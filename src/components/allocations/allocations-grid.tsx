@@ -61,20 +61,18 @@ export function AllocationsGrid({
           (a) => a.projectId === project.id && a.roleId === role.id
         );
 
-        if (projectAllocations.length > 0) {
-          const allocationMap: Record<number, AllocationWithRelations> = {};
-          projectAllocations.forEach((alloc) => {
-            allocationMap[alloc.week] = alloc;
-          });
+        const allocationMap: Record<number, AllocationWithRelations> = {};
+        projectAllocations.forEach((alloc) => {
+          allocationMap[alloc.week] = alloc;
+        });
 
-          rows.push({
-            projectId: project.id,
-            projectName: project.name,
-            roleId: role.id,
-            roleName: role.name,
-            allocations: allocationMap,
-          });
-        }
+        rows.push({
+          projectId: project.id,
+          projectName: project.name,
+          roleId: role.id,
+          roleName: role.name,
+          allocations: allocationMap,
+        });
       });
     });
 
@@ -148,21 +146,21 @@ export function AllocationsGrid({
         </div>
       )}
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse border">
+        <table className="w-full border-collapse border border-border">
           <thead>
-            <tr className="bg-gray-50">
-              <th className="border p-2 text-left font-semibold">Project</th>
-              <th className="border p-2 text-left font-semibold">Role</th>
+            <tr className="bg-muted">
+              <th className="border border-border p-2 text-left font-semibold text-foreground">Project</th>
+              <th className="border border-border p-2 text-left font-semibold text-foreground">Role</th>
               {weeks.map((week) => (
-                <th key={week} className="border p-2 text-center font-semibold">
+                <th key={week} className="border border-border p-2 text-center font-semibold text-foreground">
                   Week {week}
                 </th>
               ))}
             </tr>
-            <tr className="bg-gray-50">
-              <th colSpan={2} className="border p-2"></th>
+            <tr className="bg-muted">
+              <th colSpan={2} className="border border-border p-2"></th>
               {weeks.map((week) => (
-                <th key={week} className="border p-1 text-xs">
+                <th key={week} className="border border-border p-1 text-xs text-foreground">
                   <div>Planned</div>
                   <div>Actual</div>
                 </th>
@@ -171,9 +169,9 @@ export function AllocationsGrid({
           </thead>
           <tbody>
             {gridData.map((row) => (
-              <tr key={`${row.projectId}-${row.roleId}`}>
-                <td className="border p-2 font-medium">{row.projectName}</td>
-                <td className="border p-2">{row.roleName}</td>
+              <tr key={`${row.projectId}-${row.roleId}`} className="bg-card">
+                <td className="border border-border p-2 font-medium text-foreground">{row.projectName}</td>
+                <td className="border border-border p-2 text-foreground">{row.roleName}</td>
                 {weeks.map((week) => {
                   const allocation = row.allocations[week];
                   const key = allocation ? allocation.id : `${row.projectId}-${row.roleId}-${week}`;
@@ -182,7 +180,7 @@ export function AllocationsGrid({
                   const actualHours = edit?.actualHours ?? (allocation ? Number(allocation.actualHours) : 0);
 
                   return (
-                    <td key={week} className="border p-1">
+                    <td key={week} className="border border-border p-1 bg-card">
                       <div className="flex gap-1">
                         <Input
                           type="number"

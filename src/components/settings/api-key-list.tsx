@@ -44,14 +44,14 @@ export function ApiKeyList({ keys, onRevoke, canRevokeAll = false }: ApiKeyListP
 
   if (keys.length === 0) {
     return (
-      <div className="rounded-lg border bg-white p-8 text-center text-gray-500">
+      <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
         No API keys found
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border bg-white">
+    <div className="rounded-lg border bg-card">
       <Table>
         <TableHeader>
           <TableRow>

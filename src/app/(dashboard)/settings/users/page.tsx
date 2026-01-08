@@ -88,7 +88,7 @@ export default function UsersPage() {
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Users</h1>
-        <p className="mt-2 text-sm text-gray-600">Manage user roles and access</p>
+        <p className="mt-2 text-sm text-muted-foreground">Manage user roles and access</p>
       </div>
 
       <div className="rounded-lg border bg-card">
@@ -105,7 +105,7 @@ export default function UsersPage() {
           <TableBody>
             {users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-gray-500">
+                <TableCell colSpan={5} className="text-center text-muted-foreground">
                   No users found
                 </TableCell>
               </TableRow>

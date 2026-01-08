@@ -79,7 +79,7 @@ export default function FlagsPage() {
           <TableBody>
             {flags.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-gray-500">
+                <TableCell colSpan={4} className="text-center text-muted-foreground">
                   No flags found
                 </TableCell>
               </TableRow>

@@ -46,20 +46,52 @@ export default function AllocationsPage() {
     try {
       const bulkUpdates = updates.map((update) => {
         const allocation = allocations.find((a) => a.id === update.id);
-        if (!allocation) return null;
-
-        return {
-          projectId: allocation.projectId,
-          roleId: allocation.roleId,
-          resourceIds: allocation.resourceIds,
-          year: allocation.year,
-          month: allocation.month,
-          week: allocation.week,
-          plannedHours: update.plannedHours,
-          actualHours: update.actualHours,
-          notes: allocation.notes,
-        };
+        
+        // If allocation exists, update it
+        if (allocation) {
+          return {
+            projectId: allocation.projectId,
+            roleId: allocation.roleId,
+            resourceIds: allocation.resourceIds,
+            year: allocation.year,
+            month: allocation.month,
+            week: allocation.week,
+            plannedHours: update.plannedHours,
+            actualHours: update.actualHours,
+            notes: allocation.notes,
+          };
+        }
+        
+        // If allocation doesn't exist, parse the key to extract projectId, roleId, and week
+        // Format: `${projectId}-${roleId}-${week}`
+        const parts = update.id.split("-");
+        if (parts.length >= 3) {
+          const projectId = parts[0];
+          const roleId = parts[1];
+          const week = parseInt(parts[2]);
+          
+          // Only create if hours are greater than 0
+          if (update.plannedHours > 0 || update.actualHours > 0) {
+            return {
+              projectId,
+              roleId,
+              resourceIds: [],
+              year,
+              month,
+              week,
+              plannedHours: update.plannedHours,
+              actualHours: update.actualHours,
+              notes: null,
+            };
+          }
+        }
+        
+        return null;
       }).filter(Boolean);
+
+      if (bulkUpdates.length === 0) {
+        return;
+      }
 
       const response = await fetch("/api/allocations/bulk", {
         method: "POST",
@@ -69,6 +101,10 @@ export default function AllocationsPage() {
 
       if (response.ok) {
         fetchData();
+      } else {
+        const errorData = await response.json();
+        console.error("Failed to save allocations:", errorData);
+        throw new Error(errorData.error?.message || "Failed to save allocations");
       }
     } catch (error) {
       console.error("Failed to save allocations:", error);
