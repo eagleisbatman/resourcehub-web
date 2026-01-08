@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { runStartupMigrations } from "@/lib/db/startup";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 
 // Run migrations at startup (only in production/server)
 if (process.env.NODE_ENV === "production" && typeof window === "undefined") {
@@ -33,11 +34,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

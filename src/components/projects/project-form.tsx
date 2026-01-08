@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ProjectWithRelations, Status, Flag } from "@/types";
+import { generateCode } from "@/lib/utils/code-generator";
 
 interface ProjectFormProps {
   open: boolean;
@@ -118,19 +119,47 @@ export function ProjectForm({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="code">Code *</Label>
-                <Input
-                  id="code"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  required
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="code"
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                    required
+                  />
+                  {!project && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const generatedCode = generateCode(formData.name, formData.description);
+                        if (generatedCode) {
+                          setFormData({ ...formData, code: generatedCode });
+                        }
+                      }}
+                      disabled={!formData.name}
+                    >
+                      Auto
+                    </Button>
+                  )}
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="name">Name *</Label>
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => {
+                    const newName = e.target.value;
+                    setFormData({ ...formData, name: newName });
+                    // Auto-generate code if code is empty and name is being entered
+                    if (!project && !formData.code && newName) {
+                      const generatedCode = generateCode(newName, formData.description);
+                      if (generatedCode) {
+                        setFormData((prev) => ({ ...prev, name: newName, code: generatedCode }));
+                      }
+                    }
+                  }}
                   required
                 />
               </div>
@@ -140,7 +169,17 @@ export function ProjectForm({
               <Input
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) => {
+                  const newDescription = e.target.value;
+                  setFormData({ ...formData, description: newDescription });
+                  // Auto-update code if name exists and code was auto-generated
+                  if (!project && formData.name && formData.code === generateCode(formData.name)) {
+                    const generatedCode = generateCode(formData.name, newDescription);
+                    if (generatedCode) {
+                      setFormData((prev) => ({ ...prev, description: newDescription, code: generatedCode }));
+                    }
+                  }
+                }}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">

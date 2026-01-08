@@ -26,7 +26,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-full w-64 flex-col border-r bg-gray-50">
+    <div className="flex h-full w-64 flex-col border-r bg-background">
       <div className="flex h-16 items-center border-b px-6">
         <h1 className="text-xl font-bold">Resource Tracker</h1>
       </div>
@@ -40,8 +40,8 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-gray-900 text-white"
-                  : "text-gray-700 hover:bg-gray-100"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               )}
             >
               <item.icon className="h-5 w-5" />
@@ -50,7 +50,7 @@ export function Sidebar() {
           );
         })}
         <div className="mt-4 pt-4 border-t">
-          <div className="mb-2 px-3 text-xs font-semibold text-gray-500 uppercase">
+          <div className="mb-2 px-3 text-xs font-semibold text-muted-foreground uppercase">
             Settings
           </div>
           {settingsNav.map((item) => {
@@ -62,8 +62,8 @@ export function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-700 hover:bg-gray-100"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
               >
                 {item.name}

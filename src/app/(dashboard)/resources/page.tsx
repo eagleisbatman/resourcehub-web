@@ -11,13 +11,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ResourceForm } from "@/components/resources/resource-form";
-import { ResourceWithRole, Role } from "@/types";
+import { ResourceWithRole, Role, ProjectWithRelations } from "@/types";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function ResourcesPage() {
   const [resources, setResources] = useState<ResourceWithRole[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [projects, setProjects] = useState<ProjectWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [editingResource, setEditingResource] = useState<ResourceWithRole | undefined>();
@@ -28,16 +29,19 @@ export default function ResourcesPage() {
 
   const fetchData = async () => {
     try {
-      const [resourcesRes, rolesRes] = await Promise.all([
+      const [resourcesRes, rolesRes, projectsRes] = await Promise.all([
         fetch("/api/resources"),
         fetch("/api/config/roles"),
+        fetch("/api/projects?archived=false"),
       ]);
 
       const resourcesData = await resourcesRes.json();
       const rolesData = await rolesRes.json();
+      const projectsData = await projectsRes.json();
 
       setResources(resourcesData.data || []);
       setRoles(rolesData.data || []);
+      setProjects(projectsData.data || []);
     } catch (error) {
       console.error("Failed to fetch data:", error);
     } finally {
@@ -149,6 +153,7 @@ export default function ResourcesPage() {
         onOpenChange={setFormOpen}
         resource={editingResource}
         roles={roles}
+        projects={projects}
         onSuccess={fetchData}
       />
     </div>
